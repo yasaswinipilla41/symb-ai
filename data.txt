@@ -1,0 +1,347 @@
+### **AI Tools (`ai-tools`)**
+1. **ChatGPT**
+   * **Badges:** `["DOCS"]`
+   * **Description:** OpenAI's conversational AI. Useful for code explanation, drafting documentation, brainstorming architectures, and quick debugging help.
+   * **URL:** [https://chatgpt.com/](https://chatgpt.com/)
+2. **Claude**
+   * **Badges:** `[]`
+   * **Description:** Anthropic's conversational model. Exceptional at complex reasoning, reading large codebases, writing tests, and architectural discussions.
+   * **URL:** [https://claude.ai/login](https://claude.ai/login)
+3. **v0 by Vercel**
+   * **Badges:** `[]`
+   * **Description:** Generative UI system by Vercel. Generate production-ready React, Tailwind CSS, and Shadcn UI components from simple text prompts.
+   * **URL:** [https://v0.dev/](https://v0.dev/)
+4. **Bolt.new**
+   * **Badges:** `["NEW"]`
+   * **Description:** In-browser fullstack development agent. Prompt, run, edit, and deploy fullstack web applications directly in the browser using WebContainers.
+   * **URL:** [https://bolt.new/](https://bolt.new/)
+5. **Cursor**
+   * **Badges:** `[]`
+   * **Description:** An AI-first code editor built on VS Code. Features composer, tab completion, chat, and codebase indexing for powerful AI-assisted coding.
+   * **URL:** [https://www.cursor.com/](https://www.cursor.com/)
+6. **Windsurf**
+   * **Badges:** `["NEW"]`
+   * **Description:** The first agentic IDE by Codeium. Powered by the 'Flow' state, it combines copilot capabilities with autonomous agents for a seamless AI coding experience.
+   * **URL:** [https://codeium.com/windsurf](https://codeium.com/windsurf)
+7. **Cline**
+   * **Badges:** `["NEW"]`
+   * **Description:** An open-source autonomous coding agent that runs in your VS Code terminal. Can edit files, run commands, and build entire features using various LLMs.
+   * **URL:** [https://cline.bot/](https://cline.bot/)
+
+### **Frameworks & Agents (`frameworks-agents`)**
+1. **LangChain**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Popular framework for building LLM-powered applications. Provides components, chains, agents, and integrations for orchestrating complex AI workflows.
+   * **URL:** [https://www.langchain.com/](https://www.langchain.com/)
+2. **LlamaIndex**
+   * **Badges:** `[]`
+   * **Description:** Data framework for connecting custom data sources to LLMs. Ideal for building RAG (Retrieval-Augmented Generation) applications and managing data pipelines.
+   * **URL:** [https://www.llamaindex.ai/](https://www.llamaindex.ai/)
+3. **CrewAI**
+   * **Badges:** `["NEW"]`
+   * **Description:** Framework for orchestrating role-playing autonomous AI agents. Define agents with specific roles, goals, and tools, and let them collaborate to solve complex tasks.
+   * **URL:** [https://www.crewai.com/](https://www.crewai.com/)
+4. **LangGraph**
+   * **Badges:** `["NEW"]`
+   * **Description:** Library by LangChain for building stateful, multi-actor applications with LLMs. Perfect for creating agentic workflows with loops and complex decision graphs.
+   * **URL:** [https://www.langchain.com/langgraph](https://www.langchain.com/langgraph)
+5. **Autogen**
+   * **Badges:** `[]`
+   * **Description:** Microsoft's framework for multi-agent conversation. Allows developers to build LLM applications using multiple agents that can converse with each other to solve tasks.
+   * **URL:** [https://microsoft.github.io/autogen/](https://microsoft.github.io/autogen/)
+
+### **Model Context Protocol (`mcp-tools`)**
+1. **Model Context Protocol**
+   * **Badges:** `["DOCS"]`
+   * **Description:** An open standard by Anthropic that enables developers to build secure, two-way connections between AI models and their data sources/tools.
+   * **URL:** [https://modelcontextprotocol.io/introduction](https://modelcontextprotocol.io/introduction)
+2. **MCP Servers Directory**
+   * **Badges:** `[]`
+   * **Description:** A curated list of community-built Model Context Protocol (MCP) servers, helping you find tools to connect Claude/Cursor to databases, APIs, and local files.
+   * **URL:** [https://github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers)
+3. **Smithery**
+   * **Badges:** `["NEW"]`
+   * **Description:** A registry for MCP servers. Easily discover, install, and manage Model Context Protocol servers to extend your AI assistant's capabilities.
+   * **URL:** [https://smithery.ai/](https://smithery.ai/)
+4. **MCP Installer**
+   * **Badges:** `["NEW"]`
+   * **Description:** A CLI tool to quickly install and configure MCP servers in Cursor, Claude Desktop, and other supported environments with a single command.
+   * **URL:** [https://github.com/smithery-ai/mcp-installer](https://github.com/smithery-ai/mcp-installer)
+5. **Puppeteer MCP**
+   * **Badges:** `[]`
+   * **Description:** An MCP server that gives AI models the ability to browse the web, take screenshots, click elements, and scrape content using Puppeteer.
+   * **URL:** [https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer](https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer)
+6. **Postgres MCP**
+   * **Badges:** `[]`
+   * **Description:** An MCP server that allows AI assistants to securely inspect schemas, run queries, and analyze data in PostgreSQL databases.
+   * **URL:** [https://github.com/modelcontextprotocol/servers/tree/main/src/postgres](https://github.com/modelcontextprotocol/servers/tree/main/src/postgres)
+
+### **Data & Analytics (`data-analytics`)**
+1. **Supabase**
+   * **Badges:** `["DOCS"]`
+   * **Description:** The open-source Firebase alternative. Provides a Postgres database, authentication, instant APIs, Edge Functions, and real-time subscriptions.
+   * **URL:** [https://supabase.com/](https://supabase.com/)
+2. **MongoDB Atlas**
+   * **Badges:** `[]`
+   * **Description:** Fully-managed cloud database service for MongoDB. Flexible document model, built-in vector search for AI apps, and auto-scaling infrastructure.
+   * **URL:** [https://www.mongodb.com/products/platform/atlas-database](https://www.mongodb.com/products/platform/atlas-database)
+3. **Pinecone**
+   * **Badges:** `["NEW"]`
+   * **Description:** A fully managed vector database designed for high-performance AI applications. Ideal for storing and querying vector embeddings for RAG workflows.
+   * **URL:** [https://www.pinecone.io/](https://www.pinecone.io/)
+4. **Qdrant**
+   * **Badges:** `["NEW"]`
+   * **Description:** Open-source vector search engine and database written in Rust. Fast, scalable, and optimized for managing high-dimensional vector embeddings.
+   * **URL:** [https://qdrant.tech/](https://qdrant.tech/)
+5. **Snowflake**
+   * **Badges:** `[]`
+   * **Description:** Cloud data platform for data warehousing, data lakes, and analytics. Enables secure sharing, data engineering, and running analytical workloads at scale.
+   * **URL:** [https://www.snowflake.com/en/](https://www.snowflake.com/en/)
+
+### **Web Analytics (`web-analytics`)**
+1. **Google Analytics 4**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Google's primary web and app analytics tool. Tracks user journeys, engagement, conversions, and provides machine-learning insights.
+   * **URL:** [https://analytics.google.com/analytics/web/](https://analytics.google.com/analytics/web/)
+2. **Mixpanel**
+   * **Badges:** `[]`
+   * **Description:** Product analytics platform that helps teams analyze user behavior in real-time. Features funnel analysis, retention charts, and cohort segmentation.
+   * **URL:** [https://mixpanel.com/](https://mixpanel.com/)
+3. **PostHog**
+   * **Badges:** `["NEW"]`
+   * **Description:** Open-source product OS. Combines product analytics, session replays, feature flags, A/B testing, and surveys in a single platform.
+   * **URL:** [https://posthog.com/](https://posthog.com/)
+
+### **Backend & Infra (`backend-infra`)**
+1. **Node.js**
+   * **Badges:** `["DOCS"]`
+   * **Description:** JavaScript runtime built on Chrome's V8 engine. The foundation for modern web backend development, tooling, and package ecosystems (npm).
+   * **URL:** [https://nodejs.org/en](https://nodejs.org/en)
+2. **Bun**
+   * **Badges:** `["NEW"]`
+   * **Description:** A fast, all-in-one JavaScript runtime, bundler, test runner, and package manager. Designed as a drop-in replacement for Node.js with native TypeScript support.
+   * **URL:** [https://bun.sh/](https://bun.sh/)
+3. **Docker**
+   * **Badges:** `[]`
+   * **Description:** Platform for containerizing applications. Package apps with all their dependencies to ensure they run consistently across development, test, and production.
+   * **URL:** [https://www.docker.com/](https://www.docker.com/)
+
+### **Hosting & Domains (`hosting-domains`)**
+1. **Vercel**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Cloud platform for frontend developers. Optimized for Next.js, providing instant deployments, global CDN, serverless functions, and analytics.
+   * **URL:** [https://vercel.com/](https://vercel.com/)
+2. **Netlify**
+   * **Badges:** `[]`
+   * **Description:** Hosting and serverless platform for static sites and modern web apps. Git-based deployments, serverless functions, and forms integration.
+   * **URL:** [https://www.netlify.com/](https://www.netlify.com/)
+3. **Railway**
+   * **Badges:** `["NEW"]`
+   * **Description:** Infrastructure platform where you can provision databases, deploy servers, and manage fullstack applications with minimal configuration.
+   * **URL:** [https://railway.app/](https://railway.app/)
+4. **Namecheap**
+   * **Badges:** `[]`
+   * **Description:** Domain registrar and web hosting company. Provides domain registration, DNS management, SSL certificates, and affordable hosting options.
+   * **URL:** [https://www.namecheap.com/](https://www.namecheap.com/)
+
+### **Web Scraping (`web-scraping`)**
+1. **Jina Reader**
+   * **Badges:** `["NEW"]`
+   * **Description:** A search-to-markdown tool designed for LLMs. Convert any web URL into clean, LLM-friendly markdown content for RAG or scraping pipelines.
+   * **URL:** [https://jina.ai/reader/](https://jina.ai/reader/)
+2. **Firecrawl**
+   * **Badges:** `["NEW"]`
+   * **Description:** Turn entire websites into clean markdown or structured data. Built specifically for LLM applications to scrape and crawl pages with ease.
+   * **URL:** [https://www.firecrawl.dev/](https://www.firecrawl.dev/)
+
+### **ERP & Business (`erp-business`)**
+1. **Odoo**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Open-source suite of business apps. Covers CRM, eCommerce, billing, accounting, manufacturing, warehouse, and project management.
+   * **URL:** [https://www.odoo.com/](https://www.odoo.com/)
+2. **ERPNext**
+   * **Badges:** `[]`
+   * **Description:** Free and open-source integrated Enterprise Resource Planning (ERP) software. Built on the Frappe framework, covers all major business modules.
+   * **URL:** [https://erpnext.com/](https://erpnext.com/)
+
+### **Payments (`payments`)**
+1. **Stripe**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Financial infrastructure for the internet. Payment processing, subscription billing, fraud prevention, and global payout APIs.
+   * **URL:** [https://stripe.com/gb](https://stripe.com/gb)
+
+### **Azure (`azure`)**
+1. **Azure Portal**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Microsoft Azure's web console. Build, manage, and monitor everything from simple web apps to complex cloud databases and AI infrastructure.
+   * **URL:** [https://azure.microsoft.com/en-gb/features/azure-portal/](https://azure.microsoft.com/en-gb/features/azure-portal/)
+2. **Azure Static Web Apps**
+   * **Badges:** `[]`
+   * **Description:** Service that automatically builds and deploys full stack web apps to Azure from a code repository. Global hosting, integrated API, and routing.
+   * **URL:** [https://azure.microsoft.com/en-gb/products/app-service/static/](https://azure.microsoft.com/en-gb/products/app-service/static/)
+3. **Azure Container Apps**
+   * **Badges:** `["NEW"]`
+   * **Description:** Fully managed serverless container service. Run microservices and containerized applications without managing complex Kubernetes infrastructure.
+   * **URL:** [https://azure.microsoft.com/en-gb/products/container-apps/](https://azure.microsoft.com/en-gb/products/container-apps/)
+4. **Azure Key Vault**
+   * **Badges:** `[]`
+   * **Description:** Cloud service for securely storing and accessing secrets, keys, and certificates. Centralized management of application secrets and encryption.
+   * **URL:** [https://azure.microsoft.com/en-gb/products/key-vault/](https://azure.microsoft.com/en-gb/products/key-vault/)
+5. **Azure Cosmos DB**
+   * **Badges:** `[]`
+   * **Description:** Fully managed, globally distributed NoSQL database. Single-digit millisecond response times, automatic scaling, and multi-model API support.
+   * **URL:** [https://azure.microsoft.com/en-gb/products/cosmos-db/](https://azure.microsoft.com/en-gb/products/cosmos-db/)
+
+### **AWS (`aws`)**
+1. **AWS Console**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Amazon Web Services management console. Access and manage AWS services, configure resources, and monitor costs and billing.
+   * **URL:** [https://aws.amazon.com/console/](https://aws.amazon.com/console/)
+2. **AWS Amplify**
+   * **Badges:** `[]`
+   * **Description:** Set of tools and services to build and deploy fullstack web and mobile apps on AWS. Easy backend configuration, hosting, and UI components.
+   * **URL:** [https://aws.amazon.com/amplify/](https://aws.amazon.com/amplify/)
+3. **AWS Lambda**
+   * **Badges:** `[]`
+   * **Description:** Serverless compute service that runs your code in response to events. Automatically manages the underlying compute resources for you.
+   * **URL:** [https://aws.amazon.com/lambda/](https://aws.amazon.com/lambda/)
+4. **AWS Cognito**
+   * **Badges:** `[]`
+   * **Description:** Customer identity and access management (CIAM) service. Add user sign-up, sign-in, and access control to your web and mobile apps.
+   * **URL:** [https://aws.amazon.com/cognito/](https://aws.amazon.com/cognito/)
+5. **Amazon DynamoDB**
+   * **Badges:** `[]`
+   * **Description:** Fully managed, serverless, key-value NoSQL database designed to run high-performance applications at any scale. Consistent sub-10ms latency.
+   * **URL:** [https://aws.amazon.com/dynamodb/](https://aws.amazon.com/dynamodb/)
+
+### **React (`react`)**
+1. **React Router**
+   * **Badges:** `["DOCS"]`
+   * **Description:** The standard routing library for React. Enables dynamic, client-side routing, nested layouts, and robust data loading/mutations (v7).
+   * **URL:** [https://reactrouter.com/](https://reactrouter.com/)
+2. **Shadcn UI**
+   * **Badges:** `["NEW"]`
+   * **Description:** Beautifully designed components that you can copy and paste into your apps. Accessible, customizable, and built on Radix Primitives and Tailwind CSS.
+   * **URL:** [https://ui.shadcn.com/](https://ui.shadcn.com/)
+
+### **Frameworks (Mobile) (`mobile-frameworks`)**
+1. **React Native**
+   * **Badges:** `["DOCS"]`
+   * **Description:** Build native iOS and Android apps using React and JavaScript. Write once, run everywhere with native performance and UI rendering.
+   * **URL:** [https://reactnative.dev/](https://reactnative.dev/)
+2. **Expo**
+   * **Badges:** `["NEW"]`
+   * **Description:** An open-source platform for making universal native apps for Android, iOS, and the web with JavaScript and React. Simplifies development and deployment.
+   * **URL:** [https://expo.dev/](https://expo.dev/)
+3. **Flutter**
+   * **Badges:** `[]`
+   * **Description:** Google's UI toolkit for building beautiful, natively compiled applications for mobile, web, desktop, and embedded devices from a single codebase.
+   * **URL:** [https://flutter.dev/](https://flutter.dev/)
+
+### **CI/CD & Distribution (`cicd-distribution`)**
+1. **Codemagic**
+   * **Badges:** `["NEW"]`
+   * **Description:** CI/CD built specifically for mobile. Automated builds, code signing, and distribution for React Native, Flutter, and native iOS/Android apps.
+   * **URL:** [https://codemagic.io/start/](https://codemagic.io/start/)
+2. **TestFlight**
+   * **Badges:** `[]`
+   * **Description:** Apple's official platform for distributing iOS beta builds to testers. Up to 10,000 external testers per app, integrated with App Store Connect.
+   * **URL:** [https://developer.apple.com/testflight/](https://developer.apple.com/testflight/)
+3. **Firebase App Distribution**
+   * **Badges:** `[]`
+   * **Description:** Distribute pre-release iOS and Android builds to testers in seconds. Free, works alongside TestFlight, and integrates with Fastlane and CI pipelines.
+   * **URL:** [https://firebase.google.com/products/app-distribution](https://firebase.google.com/products/app-distribution)
+4. **Google Play**
+   * **Badges:** `[]`
+   * **Description:** Android app distribution via the Play Store. Internal/closed/open testing tracks let you roll out gradually and collect structured feedback before launch.
+   * **URL:** [https://play.google.com/console/signup](https://play.google.com/console/signup)
+
+### **Source Control (`source-control`)**
+1. **GitHub**
+   * **Badges:** `["DOCS"]`
+   * **Description:** The standard for source control. Pull requests, code review, Issues, Projects, and GitHub Actions for CI/CD pipelines — all in one place.
+   * **URL:** [https://github.com/](https://github.com/)
+2. **Azure DevOps**
+   * **Badges:** `[]`
+   * **Description:** Microsoft's DevOps platform with Repos (Git), Pipelines (CI/CD), Boards (work tracking), and Artifacts. Integrates tightly with the Azure ecosystem.
+   * **URL:** [https://azure.microsoft.com/en-gb/products/devops/?nav=min](https://azure.microsoft.com/en-gb/products/devops/?nav=min)
+
+### **Infrastructure as Code (`iac`)**
+1. **Terraform**
+   * **Badges:** `[]`
+   * **Description:** Industry-standard IaC tool by HashiCorp. Provision and manage cloud infrastructure across AWS, Azure, GCP, and more using declarative HCL configuration.
+   * **URL:** [https://developer.hashicorp.com/terraform](https://developer.hashicorp.com/terraform)
+2. **Azure Bicep**
+   * **Badges:** `[]`
+   * **Description:** Microsoft's DSL for deploying Azure resources. A cleaner alternative to ARM templates — concise syntax, type safety, and native Azure tooling support.
+   * **URL:** [https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/)
+3. **Azure AZD**
+   * **Badges:** `["NEW"]`
+   * **Description:** Azure Developer CLI — scaffold, provision, and deploy full Azure applications in one command. Templates for common architectures, CI/CD pipelines included.
+   * **URL:** [https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/)
+
+### **Testing (`testing`)**
+1. **Playwright**
+   * **Badges:** `["NEW"]`
+   * **Description:** Microsoft's end-to-end testing framework for web apps. Supports Chromium, Firefox, and WebKit. Auto-waits, trace viewer, and codegen make it the modern standard for browser automation and testing.
+   * **URL:** [https://playwright.dev/](https://playwright.dev/)
+
+### **Design Tools (`design-tools`)**
+1. **Figma**
+   * **Badges:** `[]`
+   * **Description:** The standard for UI/UX design. Collaborative, browser-based, and packed with plugins. Has an official MCP server for AI-assisted design workflows.
+   * **URL:** [https://www.figma.com/](https://www.figma.com/)
+2. **Canva**
+   * **Badges:** `[]`
+   * **Description:** Easy-to-use design platform for marketing materials, presentations, social media, and more. Huge template library with AI-powered design tools built in.
+   * **URL:** [https://www.canva.com/](https://www.canva.com/)
+3. **FigJam**
+   * **Badges:** `[]`
+   * **Description:** Figma's online whiteboard for brainstorming, diagramming, and workshops. Sticky notes, flowcharts, and real-time collaboration — great for planning sessions.
+   * **URL:** [https://www.figma.com/figjam/](https://www.figma.com/figjam/)
+4. **Miro**
+   * **Badges:** `[]`
+   * **Description:** Collaborative visual workspace for teams. Ideal for sprint planning, user journey mapping, retrospectives, and system diagrams with your whole team.
+   * **URL:** [https://miro.com/](https://miro.com/)
+
+### **Animation (`animation`)**
+1. **GSAP**
+   * **Badges:** `[]`
+   * **Description:** Industry-standard JavaScript animation library. Blazing fast, works everywhere, and handles complex timeline-based animations with ease.
+   * **URL:** [https://gsap.com/](https://gsap.com/)
+2. **Lottie**
+   * **Badges:** `[]`
+   * **Description:** Render Adobe After Effects animations natively on web, iOS, and Android. Ship beautiful animations exported as lightweight JSON files.
+   * **URL:** [https://lottiefiles.com/](https://lottiefiles.com/)
+3. **Motion**
+   * **Badges:** `["NEW"]`
+   * **Description:** The animation library for React. Formerly Framer Motion — production-ready animations with a simple declarative API, gestures, layout animations, and scroll effects.
+   * **URL:** [https://motion.dev/](https://motion.dev/)
+
+### **Colors (`colors`)**
+1. **Flat UI Colors**
+   * **Badges:** `[]`
+   * **Description:** Curated flat color palettes from designers around the world. Simple, beautiful, and ready to copy as hex, RGB, or CSS variables.
+   * **URL:** [https://flatuicolors.com/](https://flatuicolors.com/)
+
+### **Icons (`icons`)**
+1. **Ionicons**
+   * **Badges:** `[]`
+   * **Description:** Premium open-source icon set by Ionic. 1,300+ icons with outline, filled, and sharp variants. Works in React, Vue, Angular, and plain HTML.
+   * **URL:** [https://ionic.io/ionicons](https://ionic.io/ionicons)
+
+### **Note Taking (`note-taking`)**
+1. **Notion**
+   * **Badges:** `[]`
+   * **Description:** All-in-one workspace for notes, docs, wikis, and project management. Great for team knowledge bases, project planning, and personal organization.
+   * **URL:** [https://www.notion.com/](https://www.notion.com/)
+2. **Microsoft Loop**
+   * **Badges:** `[]`
+   * **Description:** Microsoft's collaborative workspace app. Loop components work across Teams, Outlook, and Office — keeping everyone in sync with live, portable content blocks.
+   * **URL:** [https://loop.cloud.microsoft/learn](https://loop.cloud.microsoft/learn)
+
+### **Task Management (`task-management`)**
+1. **TickTick**
+   * **Badges:** `[]`
+   * **Description:** Task manager and to-do app with calendar view, habits, Pomodoro timer, and smart lists. Great for staying on top of daily work and personal tasks.
+   * **URL:** [https://ticktick.com/](https://ticktick.com/)

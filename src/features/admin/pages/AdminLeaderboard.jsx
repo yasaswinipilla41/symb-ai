@@ -1,0 +1,194 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock } from 'lucide-react';
+import { quizAttempts, profiles } from '../../../lib/backend';
+import { PASS_PERCENT, downloadCertificatePDF, certificateId } from '../../../lib/certificates';
+
+function AdminLeaderboard() {
+  const navigate = useNavigate();
+  const [attempts, setAttempts] = useState([]);
+  const [userMap, setUserMap] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    const [qa, pf] = await Promise.all([quizAttempts.listAll(), profiles.list()]);
+    setAttempts(qa.data || []);
+    const map = {};
+    (pf.data || []).forEach((p) => { map[p.user_id] = p; });
+    setUserMap(map);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const bestAttempts = useMemo(() => {
+    const best = {};
+    
+    attempts.forEach(a => {
+      const pct = Number(a.percentage) || 0;
+      if (pct < PASS_PERCENT) return; // View only requests from students who have passed the quiz.
+
+      const key = `${a.user_id}::${a.resource_name}`;
+      const cur = best[key];
+      
+      const hasRequest = (attempt) => attempt.cert_status && attempt.cert_status !== 'none';
+      
+      if (!cur) {
+        best[key] = { ...a, percentage: pct };
+      } else {
+        const curHas = hasRequest(cur);
+        const aHas = hasRequest(a);
+        
+        if (aHas && !curHas) {
+          best[key] = { ...a, percentage: pct };
+        } else if (!aHas && curHas) {
+          // keep cur
+        } else {
+          // both have or both don't have, pick highest score
+          if (pct > cur.percentage || (pct === cur.percentage && new Date(a.created_at) > new Date(cur.created_at))) {
+            best[key] = { ...a, percentage: pct };
+          }
+        }
+      }
+    });
+    
+    return Object.values(best).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [attempts]);
+
+  const handleApprove = async (a) => {
+    setBusy(a.id);
+    await quizAttempts.update(a.id, { cert_status: 'approved', cert_id: a.cert_id || certificateId(a.user_id, a.resource_name) });
+    await load();
+    setBusy(null);
+  };
+
+  const handleReject = async (a) => {
+    if (!window.confirm("Are you sure you want to reject this certificate request?")) return;
+    setBusy(a.id);
+    await quizAttempts.update(a.id, { cert_status: 'rejected' });
+    await load();
+    setBusy(null);
+  };
+
+  const handleDownload = async (a, studentName) => {
+    setBusy('dl-' + a.id);
+    try {
+      const cert = {
+        resourceName: a.resource_name,
+        categoryLabel: 'General', // fallback, admin might not need perfect category matching here or we can lookup
+        percentage: Math.round(a.percentage),
+        date: a.created_at,
+        id: a.cert_id || certificateId(a.user_id, a.resource_name),
+      };
+      await downloadCertificatePDF(cert, studentName);
+    } catch {
+      window.alert('Could not download certificate.');
+    }
+    setBusy(null);
+  };
+
+  return (
+    <div className="dash-page">
+      <div className="page-toolbar">
+        <div>
+          <h2 className="dash-h2">Leaderboard & Approvals</h2>
+          <p className="dash-muted">Manage student quiz scores and certificate requests.</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="empty-hint">Loading...</p>
+      ) : bestAttempts.length === 0 ? (
+        <div className="empty-state">
+          <Award size={40} />
+          <p>No successful quiz attempts recorded yet.</p>
+        </div>
+      ) : (
+        <div className="card" style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th style={{ width: 60 }}>Photo</th>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Certificate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bestAttempts.map(a => {
+                const u = userMap[a.user_id];
+                const studentName = u?.full_name || u?.email || 'Student';
+                const passed = a.percentage >= PASS_PERCENT;
+                const status = a.cert_status || 'none';
+                return (
+                  <tr key={a.id}>
+                    <td onClick={() => navigate(`/admin/student/${a.user_id}`)} style={{ cursor: 'pointer' }}>
+                      {u?.avatar_url ? (
+                        <img src={u.avatar_url} alt="Profile" className="dash-avatar sm" style={{ objectFit: 'cover' }} />
+                      ) : (
+                        <div className="dash-avatar sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-slate-200)', color: 'var(--color-slate-500)' }}>
+                          <User size={16} />
+                        </div>
+                      )}
+                    </td>
+                    <td onClick={() => navigate(`/admin/student/${a.user_id}`)} style={{ cursor: 'pointer' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong className="hover-underline" style={{ lineHeight: '1.4' }}>{studentName}</strong>
+                        <span style={{ fontSize: '0.85em', color: 'var(--color-slate-500)' }}>{u?.email}</span>
+                      </div>
+                    </td>
+                    <td>{a.resource_name}</td>
+                    <td>
+                      <strong style={{ color: passed ? 'var(--color-green)' : 'var(--color-red)' }}>
+                        {a.percentage}%
+                      </strong>
+                    </td>
+                    <td>
+                      <span className={`badge-${passed ? 'green' : 'red'}`}>
+                        {passed ? 'Passed' : 'Failed'}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--color-slate-500)', fontSize: '0.9em' }}>
+                      {new Date(a.created_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {status === 'approved' && <span className="badge-green"><ShieldCheck size={12} /> Approved</span>}
+                      {status === 'pending' && <span className="badge-amber"><Clock size={12} /> Pending</span>}
+                      {status === 'rejected' && <span className="badge-red"><X size={12} /> Rejected</span>}
+                      {status === 'none' && <span className="dash-muted">No Request</span>}
+                    </td>
+                    <td>
+                      {status === 'pending' && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn btn-primary btn-sm" disabled={busy === a.id} onClick={() => handleApprove(a)}>Approve</button>
+                          <button className="btn btn-outline btn-sm" disabled={busy === a.id} onClick={() => handleReject(a)}>Reject</button>
+                        </div>
+                      )}
+                      {status === 'approved' && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn btn-primary btn-sm" onClick={() => navigate(`/admin/certificate/${a.user_id}/${encodeURIComponent(a.resource_name)}`)}>
+                            <Eye size={14} /> View
+                          </button>
+                          <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
+                            <Download size={14} /> DL
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AdminLeaderboard;
