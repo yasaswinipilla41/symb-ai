@@ -31,10 +31,12 @@ function QuizResultsPage() {
     return () => { active = false; };
   }, [user]);
 
-  // Which resources have an earned certificate.
-  const certified = useMemo(() => {
-    const set = new Set(earnedCertificates(attempts, user?.id).map((c) => c.resourceName));
-    return set;
+  // Earned certificates by resource, keyed so we can read each one's approval
+  // status. A certificate is downloadable ONLY once an admin has approved it.
+  const certByResource = useMemo(() => {
+    const map = {};
+    for (const c of earnedCertificates(attempts, user?.id)) map[c.resourceName] = c;
+    return map;
   }, [attempts, user]);
 
   const sorted = useMemo(
@@ -80,7 +82,8 @@ function QuizResultsPage() {
               {sorted.map((a) => {
                 const pct = Math.round(Number(a.percentage) || 0);
                 const passed = pct >= PASS_PERCENT;
-                const hasCert = certified.has(a.resource_name);
+                const certInfo = certByResource[a.resource_name];
+                const approved = certInfo?.cert_status === 'approved';
                 return (
                   <tr key={a.id}>
                     <td>
@@ -98,14 +101,23 @@ function QuizResultsPage() {
                     <td>{new Date(a.created_at).toLocaleDateString()}</td>
                     <td><span className="result-mini"><Clock size={13} /> {formatTime(a.time_taken_s)}</span></td>
                     <td>
-                      {hasCert ? (
+                      {!certInfo ? (
+                        <span className="cert-status locked">Not earned</span>
+                      ) : approved ? (
                         <div className="row-actions">
                           <button className="icon-btn sm" title="Preview certificate" onClick={() => navigate(`/dashboard/certificate/${encodeURIComponent(a.resource_name)}`)}><Eye size={15} /></button>
                           <button className="icon-btn sm" title="Download certificate" disabled={busy === a.resource_name} onClick={() => downloadCert(a.resource_name, a.created_at)}><Download size={15} /></button>
                           <span className="cert-status earned"><Award size={13} /> Earned</span>
                         </div>
                       ) : (
-                        <span className="cert-status locked">Not earned</span>
+                        <div className="row-actions">
+                          <button className="icon-btn sm" title="View certificate status" onClick={() => navigate(`/dashboard/certificate/${encodeURIComponent(a.resource_name)}`)}><Eye size={15} /></button>
+                          <span className="cert-status locked">
+                            {certInfo.cert_status === 'pending' ? 'Awaiting approval'
+                              : certInfo.cert_status === 'rejected' ? 'Rejected'
+                              : 'Approval required'}
+                          </span>
+                        </div>
                       )}
                     </td>
                   </tr>

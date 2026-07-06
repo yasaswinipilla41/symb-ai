@@ -21,17 +21,52 @@ export async function approveCertificate(attempt) {
 
   if (isSupabaseConfigured) {
     const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch('/api/approve-certificate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.access_token || ''}`,
-      },
-      body: JSON.stringify({ attemptId: attempt.id }),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `Approval failed (${res.status}).`);
-    return body;
+
+    // Primary path: the serverless function approves, mints a 24h token, and
+    // emails the download link. body is null when the response isn't JSON —
+    // e.g. a 404 HTML page when the /api functions aren't deployed, or when the
+    // SPA is served without `vercel dev`.
+    let res = null;
+    let body = null;
+    try {
+      res = await fetch('/api/approve-certificate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ attemptId: attempt.id }),
+      });
+      body = await res.json().catch(() => null);
+    } catch {
+      // Network error reaching the function — fall through to direct approval.
+    }
+
+    if (res && res.ok) return body || { ok: true, emailed: false };
+
+    // A genuine, JSON error from the function (not-admin, not-passed, …) must be
+    // surfaced — never silently approved.
+    if (res && body && body.error) throw new Error(body.error);
+
+    // Endpoint unreachable / route-missing (bodyless 404, network failure).
+    // Approve directly against the DB — RLS (`is_admin()`) only lets admins do
+    // this — so approval still works. The emailed token link is skipped here;
+    // the student downloads from their dashboard once the status is 'approved'.
+    const { error } = await supabase
+      .from('quiz_attempts')
+      .update({ cert_status: 'approved', cert_id: certId })
+      .eq('id', attempt.id);
+    if (error) {
+      const status = res ? `HTTP ${res.status}` : 'network error';
+      throw new Error(`Approval failed (${status}) and the direct fallback also failed: ${error.message}`);
+    }
+    return {
+      ok: true,
+      emailed: false,
+      emailError: 'The email/download-link service is unavailable, so no link was sent. The certificate is approved — the student can download it from their dashboard.',
+      link: null,
+      degraded: true,
+    };
   }
 
   // --- Mock mode: approve locally + mint a local token (no real email) ------
