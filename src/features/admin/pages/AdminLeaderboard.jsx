@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock } from 'lucide-react';
 import { quizAttempts, profiles } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, certificateId } from '../../../lib/certificates';
+import { approveCertificate } from '../../../lib/certificateApi';
 
 function AdminLeaderboard() {
   const navigate = useNavigate();
@@ -58,9 +59,25 @@ function AdminLeaderboard() {
 
   const handleApprove = async (a) => {
     setBusy(a.id);
-    await quizAttempts.update(a.id, { cert_status: 'approved', cert_id: a.cert_id || certificateId(a.user_id, a.resource_name) });
-    await load();
-    setBusy(null);
+    try {
+      const studentName = userMap[a.user_id]?.full_name || userMap[a.user_id]?.email || 'the student';
+      const result = await approveCertificate(a);
+      if (result.emailed) {
+        window.alert(`Certificate approved. A download link was emailed to ${result.to || studentName}. It expires in 24 hours.`);
+      } else if (result.link) {
+        const note = result.mock
+          ? 'Certificate approved. Email is disabled in offline/demo mode — share this 24-hour download link:'
+          : `Certificate approved, but the email could not be sent${result.emailError ? ` (${result.emailError})` : ''}. Share this 24-hour download link:`;
+        window.prompt(note, result.link);
+      } else {
+        window.alert('Certificate approved.');
+      }
+    } catch (e) {
+      window.alert(`Approval failed: ${e.message}`);
+    } finally {
+      await load();
+      setBusy(null);
+    }
   };
 
   const handleReject = async (a) => {

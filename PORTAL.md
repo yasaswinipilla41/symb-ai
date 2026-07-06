@@ -83,6 +83,38 @@ Route guards live in `src/routes/ProtectedRoute.jsx`.
 - ✅ **Admin → Quiz Review**: grade open-ended answers (0/1/2 marks); saving
   recomputes the combined score & percentage across all 25 marks.
 
+## Certificates — approval + emailed 24h download link
+
+- ✅ Passing a quiz (≥ `PASS_PERCENT`, 80%) earns a certificate; the user
+  **requests** it (`cert_status: 'pending'`).
+- ✅ An admin **approves** it from the Leaderboard or a Student Profile. Approval
+  goes through the serverless function [`api/approve-certificate.js`](api/approve-certificate.js),
+  which: verifies the caller is an admin, sets `cert_status: 'approved'`, mints a
+  random token in `public.cert_tokens` with a **24-hour `expires_at`**, and
+  **emails the user a download link** via Resend.
+- ✅ The emailed link opens the public page `/certificate-download/:token`
+  ([CertificateDownloadPage.jsx](src/features/public/CertificateDownloadPage.jsx)),
+  which validates the token server-side via
+  [`api/redeem-cert-token.js`](api/redeem-cert-token.js) and, if valid & unexpired,
+  renders the certificate and lets the user download the PDF (same jsPDF generator
+  as the in-app pages). Expired/invalid links show a friendly message.
+- ✅ **Offline/demo mock mode** works with no server: approval updates the local
+  store, mints a local token, and returns the link on-screen instead of emailing.
+
+### Deploying the certificate email flow (Supabase + Vercel)
+
+1. Run [`supabase/certificate-download-tokens.sql`](supabase/certificate-download-tokens.sql)
+   in the Supabase SQL editor (also included at the bottom of `schema.sql`).
+2. In the **Vercel dashboard → Project → Settings → Environment Variables**, add
+   (these are server-only — **no** `VITE_` prefix):
+   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase → Settings → API → `service_role` (secret)
+   - `RESEND_API_KEY` — from Resend (required to actually send email)
+   - `EMAIL_FROM` — e.g. `Symbiosys Technologies <certificates@symbiosystech.com>`
+     (the sending domain must be verified in Resend)
+   - `PUBLIC_BASE_URL` — e.g. `https://symbiosys-ai-pi.vercel.app`
+3. Redeploy. Until `RESEND_API_KEY`/`EMAIL_FROM` are set, approval still works and
+   the admin is shown the 24h link to share manually.
+
 ## Next phases (scaffolded, marked "Next phase" in the UI)
 
 - Editable in-portal PPT/PDF learning materials (open/edit/save/download)

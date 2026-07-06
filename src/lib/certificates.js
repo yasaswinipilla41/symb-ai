@@ -59,8 +59,15 @@ export function hasCertificate(attempts, resourceName) {
 }
 
 // Verification QR payload.
+// Base URL is derived from the running origin so the QR always points at the
+// domain the app is actually served from. Set VITE_PUBLIC_BASE_URL to pin a
+// canonical domain (e.g. a custom cert-verification domain) if needed.
 export function certVerificationText(cert, studentName) {
-  return `https://ai-tools-study.vercel.app/verify/${cert.id}`;
+  const envBase = import.meta.env.VITE_PUBLIC_BASE_URL?.trim();
+  const base =
+    envBase ||
+    (typeof window !== 'undefined' ? window.location.origin : '');
+  return `${base.replace(/\/$/, '')}/verify/${cert.id}`;
 }
 
 async function qrDataUrl(text) {

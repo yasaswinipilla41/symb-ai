@@ -14,6 +14,7 @@ const TABLES = [
   'history',
   'quiz_attempts',
   'quiz_answers',
+  'cert_tokens', // time-limited certificate download links (mock mode)
   'notifications',
   'downloads',
   'feedback',

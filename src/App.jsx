@@ -21,6 +21,7 @@ const AuthCallback = lazy(() => import('./features/auth/AuthCallback'));
 const UserDashboard = lazy(() => import('./features/dashboard/UserDashboard'));
 const AdminDashboard = lazy(() => import('./features/admin/AdminDashboard'));
 const VerifyCertificatePage = lazy(() => import('./features/public/VerifyCertificatePage'));
+const CertificateDownloadPage = lazy(() => import('./features/public/CertificateDownloadPage'));
 
 function RouteFallback() {
   return (
@@ -43,6 +44,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/verify/:certId" element={<VerifyCertificatePage />} />
+        <Route path="/certificate-download/:token" element={<CertificateDownloadPage />} />
 
         {/* Authenticated users */}
         <Route element={<ProtectedRoute />}>

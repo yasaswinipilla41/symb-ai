@@ -466,3 +466,26 @@ end;
 $$;
 
 grant execute on function public.get_public_certificate(text) to anon, authenticated;
+
+-- ===========================================================================
+-- CERTIFICATE DOWNLOAD TOKENS  (time-limited, emailed download links)
+-- ===========================================================================
+-- When an admin approves a certificate, /api/approve-certificate inserts a row
+-- here with a random token and an expires_at 24h in the future, then emails the
+-- user a link (https://<app>/certificate-download/<token>). The link is
+-- validated server-side by /api/redeem-cert-token. Only the serverless
+-- functions (service_role) touch this table, so RLS is on with NO policies.
+create table if not exists public.cert_tokens (
+  id            uuid primary key default gen_random_uuid(),
+  token         text not null unique,
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  resource_name text not null,
+  cert_id       text not null,
+  expires_at    timestamptz not null,
+  used_at       timestamptz,
+  created_at    timestamptz not null default now()
+);
+create index if not exists idx_cert_tokens_token on public.cert_tokens(token);
+create index if not exists idx_cert_tokens_expires on public.cert_tokens(expires_at);
+alter table public.cert_tokens enable row level security;
+-- Intentionally no policies: only the service_role (serverless functions) may access.

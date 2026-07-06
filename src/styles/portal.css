@@ -4038,3 +4038,61 @@ textarea:focus {
   color: #16a34a;
   font-weight: 600;
 }
+
+/* ── Public certificate download page (emailed link destination) ─────────── */
+.cert-dl-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1rem;
+}
+
+.cert-dl-head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.cert-dl-head h1 {
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  margin: 0.5rem 0;
+}
+
+.cert-dl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cert-dl-actions {
+  margin-top: 1.25rem;
+}
+
+.cert-dl-card {
+  max-width: 460px;
+  margin: 4rem auto;
+  text-align: center;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cert-dl-card .spin {
+  animation: cert-dl-spin 0.9s linear infinite;
+  color: var(--primary-color, #4f46e5);
+}
+
+@keyframes cert-dl-spin {
+  to { transform: rotate(360deg); }
+}
