@@ -4,7 +4,7 @@ import { User, Award, Clock, FileText, ArrowLeft, ShieldCheck, Download, KeyRoun
 import { profiles, quizAttempts, history, activityLogs } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, certificateId } from '../../../lib/certificates';
 import { approveCertificate } from '../../../lib/certificateApi';
-import { isWorkshopResource } from '../../../lib/workshops';
+import { isModuleCertResource } from '../../../lib/workshops';
 import { roleLabel } from '../../../lib/roles';
 
 function StatusBadge({ status }) {
@@ -41,7 +41,7 @@ function AdminStudentProfile() {
   const bestAttempts = useMemo(() => {
     const best = {};
     attempts.forEach(a => {
-      if (isWorkshopResource(a.resource_name)) return; // workshop awards shown in Leaderboard & Approvals
+      if (isModuleCertResource(a.resource_name)) return; // module awards shown in Leaderboard & Approvals
       const pct = Number(a.percentage) || 0;
       const key = a.resource_name;
       const cur = best[key];
@@ -201,7 +201,7 @@ function AdminStudentProfile() {
               <table className="data-table">
                 <thead><tr><th>Course</th><th>Score</th><th>Result</th><th>Date</th></tr></thead>
                 <tbody>
-                  {attempts.filter(a => !isWorkshopResource(a.resource_name)).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).map(a => (
+                  {attempts.filter(a => !isModuleCertResource(a.resource_name)).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).map(a => (
                     <tr key={a.id}>
                       <td>{a.resource_name}</td>
                       <td>{Math.round(a.percentage)}%</td>

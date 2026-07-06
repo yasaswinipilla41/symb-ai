@@ -7,7 +7,7 @@
 
 import { PASS_PERCENT } from './quizFromMaterial';
 import { findResource, categoryMeta } from './catalog';
-import { isWorkshopResource } from './workshops';
+import { isModuleCertResource } from './workshops';
 
 const ORG = 'Symbiosys Technologies';
 
@@ -31,9 +31,9 @@ export function certificateId(userId, resourceName) {
 export function earnedCertificates(attempts, userId) {
   const bestByResource = {};
   for (const a of attempts) {
-    // Workshop awards are sentinel rows, not real course attempts — they are
-    // rendered by their own card, never as a normal course certificate.
-    if (isWorkshopResource(a.resource_name)) continue;
+    // Module-certificate awards are sentinel rows, not real course attempts —
+    // they are rendered by their own card, never as a normal course certificate.
+    if (isModuleCertResource(a.resource_name)) continue;
     const pct = Number(a.percentage) || 0;
     const cur = bestByResource[a.resource_name];
     if (!cur || pct > cur.percentage || (pct === cur.percentage && new Date(a.created_at) < new Date(cur.created_at))) {
@@ -198,10 +198,12 @@ export async function downloadCertificatePDF(cert, studentName) {
   doc.save(`${cert.id}-${cert.resourceName.replace(/[^a-z0-9]+/gi, '-')}.pdf`);
 }
 
-// Build a WORKSHOP completion certificate PDF (distinct copy from a course
-// certificate — see the printed template). `workshop` is a row from
-// src/lib/workshops.js; `cert` carries { id, date }.
-export async function downloadWorkshopCertificatePDF(workshop, cert, studentName) {
+// Build a MODULE-completion certificate PDF (distinct copy from a course
+// certificate — see the printed template). `mod` is a meta object from
+// src/lib/workshops.js (moduleCertMeta) carrying { heading, title, dedication,
+// tagline, slug }; `cert` carries { id, date }.
+export async function downloadModuleCertificatePDF(mod, cert, studentName) {
+  const workshop = mod;
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
   const W = doc.internal.pageSize.getWidth();

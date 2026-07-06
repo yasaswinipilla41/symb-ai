@@ -5,13 +5,13 @@
 // tiebreak. Certificates and average score are derived from the same attempts.
 
 import { PASS_PERCENT } from './quizFromMaterial';
-import { isWorkshopResource } from './workshops';
+import { isModuleCertResource } from './workshops';
 
 // Reduce a student's raw attempts to best-per-course, then to summary metrics.
 export function summarize(attempts) {
   const bestByResource = {};
   for (const a of attempts) {
-    if (isWorkshopResource(a.resource_name)) continue; // not a real course attempt
+    if (isModuleCertResource(a.resource_name)) continue; // not a real course attempt
     const pct = Number(a.percentage) || 0;
     const cur = bestByResource[a.resource_name];
     if (!cur || pct > cur.pct) {

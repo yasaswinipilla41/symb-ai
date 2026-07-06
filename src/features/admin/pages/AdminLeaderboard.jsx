@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock, Mail, Sparkles } from 'lucide-react';
 import { quizAttempts, profiles } from '../../../lib/backend';
-import { PASS_PERCENT, downloadCertificatePDF, downloadWorkshopCertificatePDF, certificateId } from '../../../lib/certificates';
+import { PASS_PERCENT, downloadCertificatePDF, downloadModuleCertificatePDF, certificateId } from '../../../lib/certificates';
 import { approveCertificate } from '../../../lib/certificateApi';
-import { isWorkshopResource, workshopFor } from '../../../lib/workshops';
+import { isModuleCertResource, moduleCertSlug, moduleCertMeta, moduleLabel } from '../../../lib/workshops';
 
 function AdminLeaderboard() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function AdminLeaderboard() {
     const best = {};
     
     attempts.forEach(a => {
-      if (isWorkshopResource(a.resource_name)) return; // workshop awards handled separately
+      if (isModuleCertResource(a.resource_name)) return; // module awards handled separately
       const pct = Number(a.percentage) || 0;
       if (pct < PASS_PERCENT) return; // View only requests from students who have passed the quiz.
 
@@ -115,13 +115,13 @@ function AdminLeaderboard() {
     setBusy(null);
   };
 
-  // --- Workshop certificate approvals --------------------------------------
-  // Sentinel quiz_attempts rows whose resource_name is a workshop. Dedupe to the
-  // most recent row per student per workshop (a re-request inserts a new row).
-  const workshopRequests = useMemo(() => {
+  // --- Module certificate approvals ----------------------------------------
+  // Sentinel quiz_attempts rows whose resource_name is a module cert. Dedupe to
+  // the most recent row per student per module (a re-request inserts a new row).
+  const moduleRequests = useMemo(() => {
     const latest = {};
     for (const a of attempts) {
-      if (!isWorkshopResource(a.resource_name)) continue;
+      if (!isModuleCertResource(a.resource_name)) continue;
       const key = `${a.user_id}::${a.resource_name}`;
       const cur = latest[key];
       if (!cur || new Date(a.created_at) > new Date(cur.created_at)) latest[key] = a;
@@ -129,10 +129,10 @@ function AdminLeaderboard() {
     return Object.values(latest).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [attempts]);
 
-  const setWorkshopStatus = async (a, cert_status) => {
+  const setModuleStatus = async (a, cert_status) => {
     setBusy(`ws-${a.id}`);
     try {
-      // Workshop certificates are delivered in-app (no emailed token link), so
+      // Module certificates are delivered in-app (no emailed token link), so
       // approval is a direct status update rather than the /api approve flow.
       await quizAttempts.update(a.id, { cert_status });
     } finally {
@@ -141,18 +141,18 @@ function AdminLeaderboard() {
     }
   };
 
-  const handleWorkshopDownload = async (a, studentName) => {
-    const w = workshopFor(a.resource_name);
-    if (!w) return;
+  const handleModuleDownload = async (a, studentName) => {
+    const slug = moduleCertSlug(a.resource_name);
+    if (!slug) return;
     setBusy(`wsdl-${a.id}`);
     try {
-      await downloadWorkshopCertificatePDF(
-        w,
+      await downloadModuleCertificatePDF(
+        moduleCertMeta(slug, moduleLabel(slug)),
         { id: a.cert_id || certificateId(a.user_id, a.resource_name), date: a.created_at },
         studentName
       );
     } catch {
-      window.alert('Could not download the workshop certificate.');
+      window.alert('Could not download the module certificate.');
     } finally {
       setBusy(null);
     }
@@ -184,27 +184,28 @@ function AdminLeaderboard() {
         </div>
       </div>
 
-      {!loading && workshopRequests.length > 0 && (
+      {!loading && moduleRequests.length > 0 && (
         <div className="card" style={{ marginBottom: '1.5rem', overflowX: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0 0.75rem' }}>
             <Sparkles size={18} style={{ color: '#7c3aed' }} />
-            <strong>Workshop Certificate Approvals</strong>
+            <strong>Module Certificate Approvals</strong>
           </div>
           <table className="data-table">
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Workshop</th>
+                <th>Module</th>
                 <th>Status</th>
                 <th>Requested</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {workshopRequests.map(a => {
+              {moduleRequests.map(a => {
                 const u = userMap[a.user_id];
                 const studentName = u?.full_name || u?.email || 'Student';
-                const w = workshopFor(a.resource_name);
+                const slug = moduleCertSlug(a.resource_name);
+                const meta = slug ? moduleCertMeta(slug, moduleLabel(slug)) : null;
                 const status = a.cert_status || 'pending';
                 return (
                   <tr key={a.id}>
@@ -214,7 +215,7 @@ function AdminLeaderboard() {
                         <span style={{ fontSize: '0.85em', color: 'var(--color-slate-500)' }}>{u?.email}</span>
                       </div>
                     </td>
-                    <td>{w?.title || a.resource_name}</td>
+                    <td>{meta?.label || a.resource_name}</td>
                     <td>
                       {status === 'approved' && <span className="badge-green"><ShieldCheck size={12} /> Approved</span>}
                       {status === 'pending' && <span className="badge-amber"><Clock size={12} /> Pending</span>}
@@ -226,15 +227,15 @@ function AdminLeaderboard() {
                     <td>
                       {status === 'pending' ? (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button className="btn btn-primary btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => setWorkshopStatus(a, 'approved')}>Approve</button>
-                          <button className="btn btn-outline btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => { if (window.confirm('Reject this workshop certificate request?')) setWorkshopStatus(a, 'rejected'); }}>Reject</button>
+                          <button className="btn btn-primary btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => setModuleStatus(a, 'approved')}>Approve</button>
+                          <button className="btn btn-outline btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => { if (window.confirm('Reject this module certificate request?')) setModuleStatus(a, 'rejected'); }}>Reject</button>
                         </div>
                       ) : status === 'approved' ? (
-                        <button className="btn btn-outline btn-sm" disabled={busy === `wsdl-${a.id}`} onClick={() => handleWorkshopDownload(a, studentName)}>
+                        <button className="btn btn-outline btn-sm" disabled={busy === `wsdl-${a.id}`} onClick={() => handleModuleDownload(a, studentName)}>
                           <Download size={14} /> DL
                         </button>
                       ) : (
-                        <button className="btn btn-primary btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => setWorkshopStatus(a, 'approved')}>Approve</button>
+                        <button className="btn btn-primary btn-sm" disabled={busy === `ws-${a.id}`} onClick={() => setModuleStatus(a, 'approved')}>Approve</button>
                       )}
                     </td>
                   </tr>

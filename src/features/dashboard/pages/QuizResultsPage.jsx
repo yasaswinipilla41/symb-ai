@@ -6,7 +6,7 @@ import { quizAttempts } from '../../../lib/backend';
 import { PASS_PERCENT } from '../../../lib/quizStore';
 import { earnedCertificates, certificateId, downloadCertificatePDF } from '../../../lib/certificates';
 import { findResource, categoryMeta } from '../../../lib/catalog';
-import { isWorkshopResource } from '../../../lib/workshops';
+import { isModuleCertResource } from '../../../lib/workshops';
 
 function formatTime(s) {
   const m = Math.floor((s || 0) / 60);
@@ -42,7 +42,7 @@ function QuizResultsPage() {
 
   const sorted = useMemo(
     () => attempts
-      .filter((a) => !isWorkshopResource(a.resource_name)) // hide workshop-award sentinel rows
+      .filter((a) => !isModuleCertResource(a.resource_name)) // hide module-cert sentinel rows
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
     [attempts]
   );
