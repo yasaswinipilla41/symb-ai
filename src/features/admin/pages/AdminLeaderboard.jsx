@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock } from 'lucide-react';
+import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock, Mail } from 'lucide-react';
 import { quizAttempts, profiles } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, certificateId } from '../../../lib/certificates';
 import { approveCertificate } from '../../../lib/certificateApi';
@@ -74,6 +74,31 @@ function AdminLeaderboard() {
       }
     } catch (e) {
       window.alert(`Approval failed: ${e.message}`);
+    } finally {
+      await load();
+      setBusy(null);
+    }
+  };
+
+  // Re-issue the download link for an already-approved certificate. Reuses the
+  // approve flow, which mints a fresh 24h token and re-emails it to the student.
+  const handleResend = async (a) => {
+    setBusy('rs-' + a.id);
+    try {
+      const studentName = userMap[a.user_id]?.full_name || userMap[a.user_id]?.email || 'the student';
+      const result = await approveCertificate(a);
+      if (result.emailed) {
+        window.alert(`A new 24-hour download link was emailed to ${result.to || studentName}.`);
+      } else if (result.link) {
+        const note = result.mock
+          ? 'Email is disabled in offline/demo mode — share this 24-hour download link:'
+          : `The link could not be emailed${result.emailError ? ` (${result.emailError})` : ''}. Copy this 24-hour download link and send it to the student:`;
+        window.prompt(note, result.link);
+      } else {
+        window.alert(`Could not send the download link${result.emailError ? `:\n\n${result.emailError}` : '.'}`);
+      }
+    } catch (e) {
+      window.alert(`Could not resend link: ${e.message}`);
     } finally {
       await load();
       setBusy(null);
@@ -193,6 +218,9 @@ function AdminLeaderboard() {
                           </button>
                           <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
                             <Download size={14} /> DL
+                          </button>
+                          <button className="btn btn-outline btn-sm" disabled={busy === 'rs-' + a.id} onClick={() => handleResend(a)} title="Email a fresh 24-hour download link to the student">
+                            <Mail size={14} /> {busy === 'rs-' + a.id ? 'Sending…' : 'Resend link'}
                           </button>
                         </div>
                       )}
