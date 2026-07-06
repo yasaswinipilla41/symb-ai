@@ -199,6 +199,15 @@ export function getMaterial(resourceName) {
   return mat;
 }
 
+// Drop cached materials so the next getMaterial() regenerates from the current
+// catalog. Call this whenever a resource is added/edited/removed by an admin,
+// otherwise an edited tool would keep serving its stale (pre-edit) material and
+// quiz. Pass a name to clear one entry, or omit to clear everything.
+export function clearMaterialCache(resourceName) {
+  if (resourceName) _cache.delete(resourceName);
+  else _cache.clear();
+}
+
 // ---------------------------------------------------------------------------
 // Admin document overrides.
 //

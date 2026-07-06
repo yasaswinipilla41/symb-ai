@@ -7,6 +7,7 @@
 
 import { PASS_PERCENT } from './quizFromMaterial';
 import { findResource, categoryMeta } from './catalog';
+import { isWorkshopResource } from './workshops';
 
 const ORG = 'Symbiosys Technologies';
 
@@ -30,6 +31,9 @@ export function certificateId(userId, resourceName) {
 export function earnedCertificates(attempts, userId) {
   const bestByResource = {};
   for (const a of attempts) {
+    // Workshop awards are sentinel rows, not real course attempts — they are
+    // rendered by their own card, never as a normal course certificate.
+    if (isWorkshopResource(a.resource_name)) continue;
     const pct = Number(a.percentage) || 0;
     const cur = bestByResource[a.resource_name];
     if (!cur || pct > cur.percentage || (pct === cur.percentage && new Date(a.created_at) < new Date(cur.created_at))) {
@@ -192,6 +196,95 @@ export async function downloadCertificatePDF(cert, studentName) {
   doc.text('Successfully Completed – Certified by Symbiosys Technologies', cx, taglineY, { align: 'center' });
 
   doc.save(`${cert.id}-${cert.resourceName.replace(/[^a-z0-9]+/gi, '-')}.pdf`);
+}
+
+// Build a WORKSHOP completion certificate PDF (distinct copy from a course
+// certificate — see the printed template). `workshop` is a row from
+// src/lib/workshops.js; `cert` carries { id, date }.
+export async function downloadWorkshopCertificatePDF(workshop, cert, studentName) {
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+
+  // Background + double border (indigo, matching the course certificate).
+  doc.setFillColor('#ffffff'); doc.rect(0, 0, W, H, 'F');
+  doc.setDrawColor('#4f46e5'); doc.setLineWidth(6); doc.rect(24, 24, W - 48, H - 48);
+  doc.setDrawColor('#c7d2fe'); doc.setLineWidth(1.5); doc.rect(36, 36, W - 72, H - 72);
+  doc.setFillColor('#4f46e5'); doc.rect(36, 36, W - 72, 10, 'F');
+
+  const cx = W / 2;
+  doc.setTextColor('#6b7280'); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+  doc.text(ORG.toUpperCase(), cx, 90, { align: 'center' });
+
+  doc.setTextColor('#4f46e5'); doc.setFont('helvetica', 'bold'); doc.setFontSize(34);
+  doc.text('Course Completion Certificate', cx, 140, { align: 'center' });
+
+  doc.setTextColor('#6b7280'); doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
+  doc.text('This certifies that', cx, 178, { align: 'center' });
+
+  doc.setTextColor('#111827'); doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
+  doc.text(studentName || 'Student', cx, 216, { align: 'center' });
+  doc.setDrawColor('#e5e7eb'); doc.setLineWidth(1); doc.line(cx - 170, 228, cx + 170, 228);
+
+  doc.setTextColor('#374151'); doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
+  doc.text(workshop.heading, cx, 258, { align: 'center' });
+
+  doc.setTextColor('#4f46e5'); doc.setFont('helvetica', 'bold'); doc.setFontSize(24);
+  doc.text(workshop.title, cx, 292, { align: 'center', maxWidth: W - 160 });
+
+  doc.setTextColor('#6b7280'); doc.setFont('helvetica', 'italic'); doc.setFontSize(13);
+  doc.text(workshop.dedication, cx, 322, { align: 'center' });
+
+  // ── Footer section (identical geometry to course certificate) ─────────────
+  const footerRowTop = H - 190;
+  const signLineY    = footerRowTop + 58;
+  const taglineY     = H - 50;
+
+  const leftX = 170;
+  const sigW  = 120;
+  try {
+    const sigImg = await loadImage('/signature.jpg');
+    const sigH   = (sigImg.height / sigImg.width) * sigW;
+    doc.addImage(sigImg, 'JPEG', leftX - sigW / 2, footerRowTop, sigW, sigH);
+  } catch (e) {
+    console.error('Could not load signature', e);
+  }
+  doc.setDrawColor('#9ca3af'); doc.setLineWidth(1);
+  doc.line(leftX - 80, signLineY, leftX + 80, signLineY);
+  doc.setTextColor('#111827'); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+  doc.text('Symbiosys Technologies', leftX, signLineY + 16, { align: 'center' });
+  doc.setTextColor('#6b7280'); doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  doc.text('Authorized Signature', leftX, signLineY + 30, { align: 'center' });
+
+  const logoW = 130;
+  try {
+    const logoImg = await loadImage('/logo.jpg');
+    const logoH   = (logoImg.height / logoImg.width) * logoW;
+    const logoBandH = signLineY - footerRowTop;
+    const logoTopY  = footerRowTop + (logoBandH - logoH) / 2;
+    doc.addImage(logoImg, 'JPEG', cx - logoW / 2, logoTopY, logoW, logoH);
+  } catch (e) {
+    console.error('Could not load logo', e);
+  }
+
+  const qrSize = 72;
+  const qrX    = W - 218;
+  const qrY    = footerRowTop;
+  const idX    = qrX + qrSize + 12;
+  const qr = await qrDataUrl(certVerificationText(cert, studentName));
+  if (qr) doc.addImage(qr, 'PNG', qrX, qrY, qrSize, qrSize);
+  doc.setTextColor('#374151'); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text('Certificate ID', idX, qrY + 14, { align: 'left' });
+  doc.setTextColor('#111827'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+  doc.text(cert.id, idX, qrY + 27, { align: 'left', maxWidth: W - idX - 50 });
+  doc.setTextColor('#6b7280'); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(new Date(cert.date).toLocaleDateString(), idX, qrY + 41, { align: 'left' });
+
+  doc.setTextColor('#4f46e5'); doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.text(workshop.tagline, cx, taglineY, { align: 'center' });
+
+  doc.save(`${cert.id}-${workshop.slug}.pdf`);
 }
 
 export { qrDataUrl, PASS_PERCENT };

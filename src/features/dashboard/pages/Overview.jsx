@@ -6,6 +6,7 @@ import { roleLabel } from '../../../lib/roles';
 import { bookmarks as bookmarksApi, history as historyApi, quizAttempts, profiles as profilesApi, notifications } from '../../../lib/backend';
 import { summarize, buildLeaderboard } from '../../../lib/leaderboard';
 import { earnedCertificates } from '../../../lib/certificates';
+import { isWorkshopResource } from '../../../lib/workshops';
 
 function StatCard({ icon: Icon, label, value, tone, sub }) {
   return (
@@ -45,7 +46,7 @@ function Overview() {
       const myAttempts = qa.data || [];
       setSummary(summarize(myAttempts));
       setCerts(earnedCertificates(myAttempts, user.id));
-      setRecentQuizzes([...myAttempts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5));
+      setRecentQuizzes(myAttempts.filter((a) => !isWorkshopResource(a.resource_name)).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5));
       setBookmarkCount((bk.data || []).length);
 
       const board = buildLeaderboard(allPf.data || [], allQa.data || []);

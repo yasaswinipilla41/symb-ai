@@ -6,6 +6,7 @@ import { quizAttempts } from '../../../lib/backend';
 import { PASS_PERCENT } from '../../../lib/quizStore';
 import { earnedCertificates, certificateId, downloadCertificatePDF } from '../../../lib/certificates';
 import { findResource, categoryMeta } from '../../../lib/catalog';
+import { isWorkshopResource } from '../../../lib/workshops';
 
 function formatTime(s) {
   const m = Math.floor((s || 0) / 60);
@@ -40,7 +41,9 @@ function QuizResultsPage() {
   }, [attempts, user]);
 
   const sorted = useMemo(
-    () => [...attempts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+    () => attempts
+      .filter((a) => !isWorkshopResource(a.resource_name)) // hide workshop-award sentinel rows
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
     [attempts]
   );
 
@@ -62,7 +65,7 @@ function QuizResultsPage() {
   return (
     <div className="dash-page">
       <h2 className="dash-h2">My Quiz Results</h2>
-      <p className="dash-muted">Every attempt is saved permanently. Pass at {PASS_PERCENT}% to earn a certificate. {attempts.length} total.</p>
+      <p className="dash-muted">Every attempt is saved permanently. Pass at {PASS_PERCENT}% to earn a certificate. {sorted.length} total.</p>
 
       {loading ? (
         <p className="empty-hint">Loading…</p>

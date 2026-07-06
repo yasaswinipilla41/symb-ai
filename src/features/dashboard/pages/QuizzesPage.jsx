@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Trophy, Play, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { quizAttempts } from '../../../lib/backend';
-import { allResources } from '../../../lib/catalog';
+import { useResourcesStore } from '../../../lib/useResourcesStore';
 import { PASS_PERCENT } from '../../../lib/quizStore';
 
 function QuizzesPage() {
@@ -12,6 +12,11 @@ function QuizzesPage() {
   const [q, setQ] = useState('');
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Live, admin-editable catalog. Sourcing quizzes from here (instead of the
+  // static catalog) means any tool an admin adds or edits automatically shows
+  // up here with an up-to-date, auto-generated quiz.
+  const { catalog, loading: catalogLoading } = useResourcesStore();
 
   useEffect(() => {
     if (!user) return;
@@ -39,7 +44,15 @@ function QuizzesPage() {
     return m;
   }, [attempts]);
 
-  const resources = useMemo(() => allResources(), []);
+  const resources = useMemo(() => {
+    const out = [];
+    for (const slug of Object.keys(catalog)) {
+      for (const item of catalog[slug].items || []) {
+        out.push({ ...item, category: item.category || slug });
+      }
+    }
+    return out;
+  }, [catalog]);
   const filtered = resources.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
@@ -55,7 +68,7 @@ function QuizzesPage() {
         </div>
       </div>
 
-      {loading ? (
+      {loading || catalogLoading ? (
         <p className="empty-hint">Loading…</p>
       ) : (
         <div className="quiz-grid">

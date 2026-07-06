@@ -17,6 +17,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { database } from '../data/database';
 import { resourcesApi, categoriesApi } from './backend';
+import { setCatalogOverlay } from './catalog';
+import { clearMaterialCache } from './materials';
 
 // Static sidebar grouping — the visual sections and which category slugs sit in
 // each. (Moved here from Sidebar so the store owns the whole nav model.)
@@ -188,6 +190,22 @@ export function useResourcesStore() {
   }, [refresh]);
 
   const catalog = useMemo(() => buildCatalog(dbCategories, dbResources), [dbCategories, dbResources]);
+
+  // Publish the merged catalog to the shared overlay so quizzes + learning
+  // materials (which read allResources()/getMaterial()) reflect admin edits.
+  // Flatten every category's items into the { ...item, category } shape the
+  // quiz/material generators expect, then invalidate the material cache so any
+  // edited resource regenerates its document and quiz.
+  useEffect(() => {
+    const flat = [];
+    for (const slug of Object.keys(catalog)) {
+      for (const item of catalog[slug].items || []) {
+        flat.push({ ...item, category: item.category || slug });
+      }
+    }
+    setCatalogOverlay(flat);
+    clearMaterialCache();
+  }, [catalog]);
 
   // Sidebar model: static sections (with live titles/counts) + custom categories
   // grouped by their remembered section.

@@ -1,0 +1,1 @@
+import{u as s,j as a,N as e}from"./index-Di6t3rFC.js";function o(){const{loading:r,isAuthenticated:t,isAdmin:i}=s();return r?a.jsx("div",{className:"route-loader",children:a.jsx("div",{className:"route-loader-spinner","aria-label":"Signing you in"})}):t?a.jsx(e,{to:i?"/admin":"/dashboard",replace:!0}):a.jsx(e,{to:"/login",replace:!0})}export{o as default};

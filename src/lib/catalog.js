@@ -30,7 +30,33 @@ export const categoryMeta = {
   'web-frameworks': { label: 'Web Frameworks', icon: 'LayoutTemplate' },
 };
 
-export function allResources() {
+// ---------------------------------------------------------------------------
+// Live catalog overlay.
+//
+// The static `database` is the base catalog, but admins can add / edit / hide
+// resources at runtime (persisted in Supabase and merged by useResourcesStore).
+// So that quizzes and learning materials stay in lock-step with what admins
+// actually publish, useResourcesStore pushes its fully-merged item list here via
+// setCatalogOverlay(). When set, `allResources()` returns the live list; until
+// it loads (or in views that never mount the store) it falls back to `database`.
+// This is what makes "add/update a tool → its quiz appears/updates" automatic.
+// ---------------------------------------------------------------------------
+let _overlay = null;
+const _overlayListeners = new Set();
+
+export function setCatalogOverlay(items) {
+  _overlay = Array.isArray(items) && items.length ? items : null;
+  _overlayListeners.forEach((cb) => { try { cb(); } catch { /* ignore */ } });
+}
+
+// Subscribe to overlay changes (returns an unsubscribe fn). Lets pages that
+// derive quizzes from allResources() re-render when admins publish changes.
+export function onCatalogChange(cb) {
+  _overlayListeners.add(cb);
+  return () => _overlayListeners.delete(cb);
+}
+
+function staticResources() {
   const out = [];
   for (const key of Object.keys(database)) {
     for (const item of database[key]?.items || []) {
@@ -38,6 +64,10 @@ export function allResources() {
     }
   }
   return out;
+}
+
+export function allResources() {
+  return _overlay ? _overlay : staticResources();
 }
 
 export function categoryList() {
