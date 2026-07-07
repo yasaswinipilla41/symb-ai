@@ -192,6 +192,28 @@ export const database = {
                 "tags": [
                     "AI Tools"
                 ]
+            },
+            {
+                "name": "Sakana AI",
+                "description": "A Tokyo-based AI research lab applying nature-inspired methods — evolution, collective intelligence, and model merging — to build efficient foundation models and automate scientific discovery, including 'The AI Scientist' and evolutionary model-merge techniques.",
+                "url": "https://sakana.ai/",
+                "badges": [
+                    "NEW"
+                ],
+                "tags": [
+                    "AI Tools"
+                ]
+            },
+            {
+                "name": "GLM 5.2",
+                "description": "An open frontier large language model in Zhipu AI's GLM family, tuned for strong reasoning, coding, and agentic tool-use with long-context support, positioned as a cost-efficient alternative to closed frontier models.",
+                "url": "https://z.ai/",
+                "badges": [
+                    "NEW"
+                ],
+                "tags": [
+                    "AI Tools"
+                ]
             }
         ]
     },
