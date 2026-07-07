@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock, Mail, Sparkles } from 'lucide-react';
 import { quizAttempts, profiles } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, downloadModuleCertificatePDF, certificateId } from '../../../lib/certificates';
-import { approveCertificate, issueCertificate } from '../../../lib/certificateApi';
+import { approveCertificate } from '../../../lib/certificateApi';
 import { isModuleCertResource, moduleCertSlug, moduleCertMeta, moduleLabel } from '../../../lib/workshops';
 
 function AdminLeaderboard() {
@@ -66,13 +66,18 @@ function AdminLeaderboard() {
     try {
       const u = userMap[a.user_id];
       const studentName = u?.full_name || u?.email || 'the student';
-      const result = await issueCertificate(a);
+      // Admin-authorized: approveCertificate posts to /api/approve-certificate,
+      // which checks the caller's admin role (issue-certificate would 403 an
+      // admin acting on another user's attempt), re-issues a 24h token, and
+      // re-emails the certificate PDF.
+      const result = await approveCertificate(a);
       if (result.emailed) {
         window.alert(`Certificate emailed to ${result.to || studentName}.`);
       } else if (result.link) {
         window.prompt('Email unavailable — share this 24-hour download link:', result.link);
       } else {
-        window.alert(`Could not email the certificate${result.error ? `: ${result.error}` : '.'}`);
+        const reason = result.emailError || result.error;
+        window.alert(`Could not email the certificate${reason ? `: ${reason}` : '.'}`);
       }
     } catch (e) {
       window.alert(`Could not email the certificate: ${e.message}`);

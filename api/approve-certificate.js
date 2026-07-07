@@ -174,6 +174,12 @@ export default async function handler(req, res) {
       pdf = null;
     }
 
+    // Module rows store a sentinel resource_name (module-cert:<slug>); use the
+    // human module title in the email copy instead of the raw sentinel string.
+    const displayName = isModuleResourceName(attempt.resource_name)
+      ? moduleMetaFor(moduleSlugFromName(attempt.resource_name), moduleLabel).title
+      : attempt.resource_name;
+
     if (resendKey && from && to) {
       try {
         const { Resend } = await import('resend');
@@ -181,10 +187,10 @@ export default async function handler(req, res) {
         const { error } = await resend.emails.send({
           from,
           to,
-          subject: `Your ${attempt.resource_name} certificate is approved`,
+          subject: `Your ${displayName} certificate is approved`,
           html: emailHtml({
             studentName,
-            resourceName: attempt.resource_name,
+            resourceName: displayName,
             link,
             expiresAtLabel: expiresAt.toUTCString(),
           }),

@@ -86,7 +86,7 @@ export default async function handler(req, res) {
       .from('quiz_attempts').select('*').eq('id', attemptId).maybeSingle();
     if (aErr || !attempt) return res.status(404).json({ error: 'Quiz attempt not found' });
     if (attempt.user_id !== caller.id) return res.status(403).json({ error: 'You can only issue your own certificate.' });
-    if (attempt.resource_name.startsWith('module-cert:')) {
+    if (attempt.resource_name.startsWith('module-cert:') || attempt.resource_name === 'AI & Emerging Technologies Workshop') {
       return res.status(400).json({ error: 'Module certificates require admin approval.' });
     }
     if (Number(attempt.percentage) < PASS_PERCENT) {
