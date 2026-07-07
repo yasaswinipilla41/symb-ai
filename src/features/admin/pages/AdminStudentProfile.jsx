@@ -116,7 +116,6 @@ function AdminStudentProfile() {
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>{studentName}</h3>
           <p style={{ margin: '0 0 1rem 0', color: 'var(--color-slate-500)' }}>{profile.email}</p>
           <div className="detail-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <div><dt>Employee ID</dt><dd>{profile.employee_id || '—'}</dd></div>
             <div><dt>Department</dt><dd>{profile.department || '—'}</dd></div>
             <div><dt>Registered</dt><dd>{new Date(profile.created_at).toLocaleDateString()}</dd></div>
             <div><dt>Role</dt><dd className="cap">{roleLabel(profile.role)}</dd></div>

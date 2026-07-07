@@ -42,13 +42,13 @@ function sessionFromUser(user) {
 // AUTH
 // ===========================================================================
 export const auth = {
-  async signUp({ email, password, fullName, employeeId }) {
+  async signUp({ email, password, fullName }) {
     email = email.trim().toLowerCase();
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, employee_id: employeeId } },
+        options: { data: { full_name: fullName } },
       });
       return { data, error };
     }
@@ -64,7 +64,7 @@ export const auth = {
       password_hash: mockHash(password),
       email_confirmed: true, // auto-confirm in mock
       created_at: new Date().toISOString(),
-      user_metadata: { full_name: fullName, employee_id: employeeId },
+      user_metadata: { full_name: fullName },
     };
     users.push(user);
     mockStore._users.save(users);
@@ -72,7 +72,6 @@ export const auth = {
       user_id: user.id,
       email,
       full_name: fullName,
-      employee_id: employeeId,
       role: isAdmin ? 'admin' : 'user',
       status: 'active',
       avatar_url: '',

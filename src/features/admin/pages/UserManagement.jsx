@@ -55,7 +55,7 @@ function UserManagement() {
   }, [attempts]);
 
   const filtered = users.filter((u) =>
-    [u.full_name, u.email, u.employee_id].filter(Boolean).some((v) => v.toLowerCase().includes(q.toLowerCase()))
+    [u.full_name, u.email].filter(Boolean).some((v) => v.toLowerCase().includes(q.toLowerCase()))
   );
 
   return (
@@ -67,7 +67,7 @@ function UserManagement() {
         </div>
         <div className="input-wrap search-inline">
           <Search size={16} />
-          <input placeholder="Search name, email, ID…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input placeholder="Search name, email…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </div>
 
@@ -80,7 +80,7 @@ function UserManagement() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Photo</th><th>User</th><th>Employee ID</th><th>Role</th><th>Status</th><th>Quizzes</th><th>Actions</th>
+                <th>Photo</th><th>User</th><th>Role</th><th>Status</th><th>Quizzes</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -104,7 +104,6 @@ function UserManagement() {
                         </div>
                       </div>
                     </td>
-                    <td>{u.employee_id || '—'}</td>
                     <td><span className={`role-badge ${u.role}`}>{roleLabel(u.role)}</span></td>
                     <td><StatusBadge status={u.status} /></td>
                     <td>{ua.length}</td>

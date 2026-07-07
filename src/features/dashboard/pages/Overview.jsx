@@ -67,10 +67,9 @@ function Overview() {
         <div>
           <p className="welcome-eyebrow">Welcome back</p>
           <h2>Hi, {name} 👋</h2>
-          <p className="welcome-sub">Study a module, pass the quiz at 80%, and earn your certificate.</p>
+          <p className="welcome-sub">Study a module, pass the quiz at 70%, and earn your certificate.</p>
         </div>
         <div className="welcome-meta">
-          <div><span>Employee ID</span><strong>{profile?.employee_id || '—'}</strong></div>
           <div><span>Email</span><strong>{profile?.email || user?.email}</strong></div>
           <div><span>Role</span><strong className="cap">{roleLabel(profile?.role)}</strong></div>
         </div>

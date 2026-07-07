@@ -20,7 +20,7 @@ function RegisterPage() {
     }
   };
 
-  const [form, setForm] = useState({ fullName: '', employeeId: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,6 @@ function RegisterPage() {
       email: form.email,
       password: form.password,
       fullName: form.fullName,
-      employeeId: form.employeeId,
     });
     setBusy(false);
     if (err) return setError(err.message || 'Unable to register.');
@@ -78,22 +77,13 @@ function RegisterPage() {
       <form className="auth-form" onSubmit={onSubmit}>
         {error && <div className="form-error">{error}</div>}
 
-        <div className="field-row">
-          <label className="field">
-            <span>Full name</span>
-            <div className="input-wrap">
-              <User size={16} />
-              <input required value={form.fullName} onChange={set('fullName')} placeholder="Ada Lovelace" />
-            </div>
-          </label>
-          <label className="field">
-            <span>Employee ID</span>
-            <div className="input-wrap">
-              <BadgeCheck size={16} />
-              <input required value={form.employeeId} onChange={set('employeeId')} placeholder="EMP-1024" />
-            </div>
-          </label>
-        </div>
+        <label className="field">
+          <span>Full name</span>
+          <div className="input-wrap">
+            <User size={16} />
+            <input required value={form.fullName} onChange={set('fullName')} placeholder="Ada Lovelace" />
+          </div>
+        </label>
 
         <label className="field">
           <span>Email</span>
