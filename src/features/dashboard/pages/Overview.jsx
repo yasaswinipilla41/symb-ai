@@ -96,7 +96,7 @@ function Overview() {
             <ul className="mini-list">
               {recentQuizzes.map((a) => (
                 <li key={a.id}>
-                  <span className={`mini-dot ${a.percentage >= 80 ? 'green' : 'amber'}`} />
+                  <span className={`mini-dot ${a.percentage >= 70 ? 'green' : 'amber'}`} />
                   <span className="mini-title">{a.resource_name}</span>
                   <span className="mini-time">{Math.round(a.percentage)}%</span>
                 </li>

@@ -412,7 +412,7 @@ export const certificatesApi = {
     // Mock backend fallback
     const attempts = mockStore.select('quiz_attempts', (a) => (
       (a.cert_id || certificateId(a.user_id, a.resource_name)) === certId
-    ) && Number(a.percentage) >= 80);
+    ) && Number(a.percentage) >= 70);
     if (!attempts.length) return { data: null, error: null };
     const attempt = attempts.sort((a, b) => b.percentage - a.percentage)[0];
     const profile = mockStore.find('profiles', (p) => p.user_id === attempt.user_id);

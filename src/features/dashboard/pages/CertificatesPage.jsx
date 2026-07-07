@@ -105,7 +105,7 @@ function CertificatesPage() {
         max_score: 0,
         // 100 = the module was fully completed (every tool passed). Stored so
         // the certificate's verification QR resolves (the public verify RPC only
-        // returns certificates at >= 80%). Filtered out of quiz-results /
+        // returns certificates at >= 70%). Filtered out of quiz-results /
         // leaderboard everywhere else.
         percentage: 100,
         correct_count: 0,
