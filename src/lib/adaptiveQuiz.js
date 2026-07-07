@@ -96,7 +96,10 @@ export class AdaptiveEngine {
 
   _take(difficulty) {
     const p = this._ensure(difficulty);
-    this.buffer.delete(difficulty); // consumed — a later same-difficulty fetch will be fresh
+    // Drop the whole buffer: the taken question is consumed, and the not-taken
+    // sibling was fetched against a shorter avoid-list, so it's stale. _prefetchNext
+    // immediately repopulates both branches fresh (in-flight fetches keep running).
+    this.buffer.clear();
     return p;
   }
 

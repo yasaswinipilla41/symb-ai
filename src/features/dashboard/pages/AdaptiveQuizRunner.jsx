@@ -25,10 +25,12 @@ function AdaptiveQuizRunner({ resourceName, engine, first }) {
   const [elapsed, setElapsed] = useState(0);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [interrupted, setInterrupted] = useState(false);
 
   const answersRef = useRef([]); // accumulates per-question records
   const correctRef = useRef(0);
   const startRef = useRef(0);
+  const busyRef = useRef(false); // synchronous re-entry guard for advance()
 
   useEffect(() => {
     startRef.current = performance.now();
@@ -38,6 +40,18 @@ function AdaptiveQuizRunner({ resourceName, engine, first }) {
 
   if (result) {
     return <QuizResult result={result} resourceName={resourceName} onRetake={() => window.location.reload()} />;
+  }
+
+  if (interrupted) {
+    return (
+      <div className="dash-page">
+        <div className="coming-soon">
+          <h2>Quiz interrupted</h2>
+          <p>We couldn't generate the next question. Your attempt was not recorded — please retake the quiz.</p>
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>Retake quiz</button>
+        </div>
+      </div>
+    );
   }
 
   const choose = (optIndex) => {
@@ -84,21 +98,28 @@ function AdaptiveQuizRunner({ resourceName, engine, first }) {
   };
 
   const advance = async () => {
-    const isLast = index === QUESTION_COUNT - 1;
-    if (isLast) { await finish(); return; }
-    setLoadingNext(true);
-    const wasCorrect = selected === current.correctIndex;
-    const nextQ = await engine.next(wasCorrect);
-    setLoadingNext(false);
-    if (!nextQ) {
-      // Mid-quiz generation failure: grade what we have so the attempt still counts.
-      await finish();
-      return;
+    if (busyRef.current) return; // guard against double-clicks (state updates are async)
+    busyRef.current = true;
+    try {
+      const isLast = index === QUESTION_COUNT - 1;
+      if (isLast) { await finish(); return; }
+      setLoadingNext(true);
+      const wasCorrect = selected === current.correctIndex;
+      const nextQ = await engine.next(wasCorrect);
+      if (!nextQ) {
+        // Mid-quiz generation failure: don't persist a partial/failing attempt —
+        // let the student retake with a clean slate.
+        setInterrupted(true);
+        return;
+      }
+      setLoadingNext(false);
+      setCurrent(nextQ);
+      setIndex((i) => i + 1);
+      setSelected(null);
+      setRevealed(false);
+    } finally {
+      busyRef.current = false;
     }
-    setCurrent(nextQ);
-    setIndex((i) => i + 1);
-    setSelected(null);
-    setRevealed(false);
   };
 
   const total = QUESTION_COUNT;
@@ -158,7 +179,7 @@ function AdaptiveQuizRunner({ resourceName, engine, first }) {
             <Send size={15} /> {submitting ? 'Submitting…' : 'Submit quiz'}
           </button>
         ) : (
-          <button className="btn btn-primary" onClick={advance} disabled={!revealed || loadingNext}>
+          <button className="btn btn-primary" onClick={advance} disabled={!revealed || loadingNext || submitting}>
             {loadingNext ? 'Loading…' : 'Next'} <ArrowRight size={15} />
           </button>
         )}
