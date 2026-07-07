@@ -5,6 +5,7 @@ import { useAuth } from '../../../lib/AuthContext';
 import { getQuizForResource, gradeQuiz } from '../../../lib/quizStore';
 import { quizAttempts, history } from '../../../lib/backend';
 import { certificateId, PASS_PERCENT } from '../../../lib/certificates';
+import { issueCertificate } from '../../../lib/certificateApi';
 import QuizResult from './QuizResult';
 
 function formatTime(s) {
@@ -78,6 +79,8 @@ function QuizRunner() {
     const graded = gradeQuiz(quiz, responses, timeTaken);
     // Persist permanently
     if (user) {
+      const passed = graded.percentage >= PASS_PERCENT;
+      const certId = passed ? certificateId(user.id, graded.resource_name) : null;
       const { data, error } = await quizAttempts.insert({
         user_id: user.id,
         resource_name: graded.resource_name,
@@ -89,7 +92,11 @@ function QuizRunner() {
         time_taken_s: graded.time_taken_s,
         status: 'completed',
         answers: graded.answers,
-        cert_id: graded.percentage >= PASS_PERCENT ? certificateId(user.id, graded.resource_name) : null,
+        // Single course certificates are auto-issued on pass (no admin approval).
+        // In Supabase mode a DB trigger also enforces this; here we set it so the
+        // localStorage mock behaves identically.
+        cert_status: passed ? 'approved' : 'none',
+        cert_id: certId,
       });
       if (error) {
         alert('Failed to save quiz attempt: ' + (error.message || JSON.stringify(error)));
@@ -97,10 +104,18 @@ function QuizRunner() {
       if (data) {
         graded.id = data.id;
         graded.user_id = user.id;
-        graded.cert_id = data.cert_id || (graded.percentage >= PASS_PERCENT ? certificateId(user.id, graded.resource_name) : null);
-        graded.cert_status = data.cert_status || 'none';
+        graded.cert_id = data.cert_id || certId;
+        graded.cert_status = data.cert_status || (passed ? 'approved' : 'none');
       }
       await history.log(user.id, 'quiz', `Completed quiz: ${resourceName}`, { percentage: graded.percentage });
+
+      // Auto-email the certificate PDF. Best-effort — never block the results
+      // screen (offline/mock mode or a missing endpoint simply skips the email;
+      // the certificate is already downloadable in-app).
+      if (passed && data) {
+        issueCertificate({ id: data.id, user_id: user.id, resource_name: graded.resource_name, cert_id: graded.cert_id })
+          .catch(() => {});
+      }
     }
     setSaving(false);
     setResult(graded);
