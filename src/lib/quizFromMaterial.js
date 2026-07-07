@@ -7,12 +7,12 @@
 // scenario-based and deterministic (seeded), so a student who studied the
 // material can pass, and scores are comparable across attempts.
 //
-// Passing score is 80% (see PASS_PERCENT).
+// Passing score is 70% (see PASS_PERCENT).
 
 import { allResources, categoryList, categoryMeta } from './catalog';
 import { getMaterial } from './materials';
 
-export const PASS_PERCENT = 80;
+export const PASS_PERCENT = 70;
 
 function hashString(str) {
   let h = 1779033703 ^ str.length;

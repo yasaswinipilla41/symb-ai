@@ -19,7 +19,7 @@ import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const PASS_PERCENT = 80;
+const PASS_PERCENT = 70;
 
 function adminClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
