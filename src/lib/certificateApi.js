@@ -16,7 +16,7 @@ const MOCK_TOKEN_PREFIX = 'mock-';
 
 // Approve a passed attempt's certificate and issue a 24h download link.
 // Returns: { ok, emailed, emailError, link, to, expiresAt, mock? }
-export async function approveCertificate(attempt) {
+export async function approveCertificate(attempt, opts = {}) {
   const certId = attempt.cert_id || certificateId(attempt.user_id, attempt.resource_name);
 
   if (isSupabaseConfigured) {
@@ -35,7 +35,7 @@ export async function approveCertificate(attempt) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token || ''}`,
         },
-        body: JSON.stringify({ attemptId: attempt.id }),
+        body: JSON.stringify({ attemptId: attempt.id, moduleLabel: opts.moduleLabel }),
       });
       body = await res.json().catch(() => null);
     } catch {
@@ -81,6 +81,48 @@ export async function approveCertificate(attempt) {
   });
   const link = `${window.location.origin}/certificate-download/${token}`;
   return { ok: true, emailed: false, mock: true, link, expiresAt: new Date(Date.now() + DAY_MS).toISOString() };
+}
+
+// Auto-issue a passed single-course certificate for the CURRENT user and email
+// the PDF. Called by the quiz runner right after a passing submit. Best-effort:
+// callers should not block the UI on the result.
+// Returns: { ok, emailed, emailError, link, to, expiresAt } | { ok:false, error }
+export async function issueCertificate(attempt) {
+  const certId = attempt.cert_id || certificateId(attempt.user_id, attempt.resource_name);
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/issue-certificate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ attemptId: attempt.id }),
+      });
+      const body = await res.json().catch(() => null);
+      if (res.ok) return body || { ok: true, emailed: false };
+      // Endpoint missing / not deployed / mock-served: the cert is already
+      // approved in the DB (trigger + client), so this is non-fatal.
+      return { ok: false, emailed: false, error: body?.error || `HTTP ${res.status}` };
+    } catch (e) {
+      return { ok: false, emailed: false, error: e.message || 'network error' };
+    }
+  }
+
+  // --- Mock mode: approve locally + mint a local token (no real email) ------
+  await quizAttempts.update(attempt.id, { cert_status: 'approved', cert_id: certId });
+  const token = `${MOCK_TOKEN_PREFIX}${mockStore.genId()}`;
+  mockStore.insert('cert_tokens', {
+    token,
+    user_id: attempt.user_id,
+    resource_name: attempt.resource_name,
+    cert_id: certId,
+    expires_at: new Date(Date.now() + DAY_MS).toISOString(),
+  });
+  const link = `${window.location.origin}/certificate-download/${token}`;
+  return { ok: true, emailed: false, mock: true, link };
 }
 
 // Validate a download token and return the certificate payload.
