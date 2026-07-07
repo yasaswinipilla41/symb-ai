@@ -17,6 +17,8 @@
 
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { buildModuleCertificatePdfBuffer, buildCertificatePdfBuffer } from './_certificate-pdf.js';
+import { moduleMetaFor, moduleSlugFromName, isModuleResourceName } from './_module-meta.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PASS_PERCENT = 70;
@@ -80,7 +82,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { attemptId } = await readJson(req);
+    const { attemptId, moduleLabel } = await readJson(req);
     if (!attemptId) return res.status(400).json({ error: 'attemptId is required' });
 
     // --- Authenticate the caller ------------------------------------------
@@ -148,6 +150,30 @@ export default async function handler(req, res) {
     let emailError = null;
     const resendKey = process.env.RESEND_API_KEY;
     const from = process.env.EMAIL_FROM;
+    // Build the certificate PDF for the email attachment. Module (consolidated)
+    // certs use the module template; anything else uses the course template.
+    let pdf = null;
+    try {
+      const base = baseUrl(req);
+      const verifyUrl = `${base}/verify/${certId || attempt.cert_id || ''}`;
+      const certForPdf = {
+        id: certId || attempt.cert_id || '',
+        resourceName: attempt.resource_name,
+        categoryLabel: 'General',
+        percentage: Math.round(Number(attempt.percentage)),
+        date: attempt.created_at,
+      };
+      if (isModuleResourceName(attempt.resource_name)) {
+        const slug = moduleSlugFromName(attempt.resource_name);
+        pdf = await buildModuleCertificatePdfBuffer(moduleMetaFor(slug, moduleLabel), certForPdf, studentName, verifyUrl);
+      } else {
+        pdf = await buildCertificatePdfBuffer(certForPdf, studentName, verifyUrl);
+      }
+    } catch (e) {
+      // A PDF failure must not block approval; email falls back to link-only.
+      pdf = null;
+    }
+
     if (resendKey && from && to) {
       try {
         const { Resend } = await import('resend');
@@ -162,6 +188,7 @@ export default async function handler(req, res) {
             link,
             expiresAtLabel: expiresAt.toUTCString(),
           }),
+          ...(pdf ? { attachments: [{ filename: `${certId || 'certificate'}.pdf`, content: pdf.toString('base64') }] } : {}),
         });
         if (error) emailError = error.message || String(error);
         else emailed = true;
