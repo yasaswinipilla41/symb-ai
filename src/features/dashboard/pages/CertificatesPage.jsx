@@ -237,27 +237,8 @@ function CertificatesPage() {
                   <span className="cert-card-id">{c.id}</span>
 
                   <div className="cert-card-actions">
-                    {c.cert_status === 'approved' ? (
-                      <>
-                        <button className="btn btn-primary btn-sm" onClick={() => navigate(`/dashboard/certificate/${encodeURIComponent(c.resourceName)}`)}><Eye size={14} /> Preview</button>
-                        <button className="btn btn-outline btn-sm" disabled={busy === c.id} onClick={() => onDownload(c)}><Download size={14} /> {busy === c.id ? '…' : 'PDF'}</button>
-                      </>
-                    ) : c.cert_status === 'pending' ? (
-                      <span className="dash-muted" style={{ fontSize: '0.85rem' }}>Pending Approval</span>
-                    ) : (
-                      <button className="btn btn-primary btn-sm" onClick={async () => {
-                        const certId = c.id || certificateId(user.id, c.resourceName);
-                        const { error } = await quizAttempts.update(c.attemptId, { cert_status: 'pending', cert_id: certId });
-                        if (error) {
-                          console.error(error);
-                          window.alert(`Failed to request certificate. Error: ${error.message || JSON.stringify(error)}`);
-                        } else {
-                          await reload();
-                        }
-                      }}>
-                        Request Certificate
-                      </button>
-                    )}
+                    <button className="btn btn-primary btn-sm" onClick={() => navigate(`/dashboard/certificate/${encodeURIComponent(c.resourceName)}`)}><Eye size={14} /> Preview</button>
+                    <button className="btn btn-outline btn-sm" disabled={busy === c.id} onClick={() => onDownload(c)}><Download size={14} /> {busy === c.id ? '…' : 'PDF'}</button>
                   </div>
                 </div>
               ))}
