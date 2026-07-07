@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Clock, CheckCircle2, XCircle, Send, ListChecks } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { getQuizForResource, gradeQuiz } from '../../../lib/quizStore';
-import { quizAttempts, history } from '../../../lib/backend';
-import { certificateId, PASS_PERCENT } from '../../../lib/certificates';
-import { issueCertificate } from '../../../lib/certificateApi';
+import { submitQuizAttempt } from '../../../lib/quizSubmit';
+import { AdaptiveEngine } from '../../../lib/adaptiveQuiz';
+import AdaptiveQuizRunner from './AdaptiveQuizRunner';
 import QuizResult from './QuizResult';
 
 function formatTime(s) {
@@ -19,6 +19,23 @@ function QuizRunner() {
   const resourceName = decodeURIComponent(resource);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // --- Adaptive probe: try LLM-generated questions; fall back to templated. ---
+  const [adaptiveMode, setAdaptiveMode] = useState('probing'); // 'probing' | 'adaptive' | 'templated'
+  const [adaptiveEngine, setAdaptiveEngine] = useState(null);
+  const [adaptiveFirst, setAdaptiveFirst] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    const eng = new AdaptiveEngine(resourceName);
+    if (!eng.ok) { setAdaptiveMode('templated'); return () => { active = false; }; }
+    eng.start().then((q) => {
+      if (!active) return;
+      if (q) { setAdaptiveEngine(eng); setAdaptiveFirst(q); setAdaptiveMode('adaptive'); }
+      else setAdaptiveMode('templated');
+    });
+    return () => { active = false; };
+  }, [resourceName]);
 
   const quiz = useMemo(() => getQuizForResource(resourceName), [resourceName]);
   const [idx, setIdx] = useState(0);
@@ -34,6 +51,21 @@ function QuizRunner() {
     const t = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(t);
   }, []);
+
+  if (adaptiveMode === 'probing') {
+    return (
+      <div className="dash-page">
+        <div className="quiz-question-card" style={{ textAlign: 'center' }}>
+          <div className="route-loader-spinner" aria-label="Preparing your quiz" style={{ margin: '1.5rem auto' }} />
+          <p className="dash-muted">Preparing your adaptive quiz…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (adaptiveMode === 'adaptive') {
+    return <AdaptiveQuizRunner resourceName={resourceName} engine={adaptiveEngine} first={adaptiveFirst} />;
+  }
 
   if (!quiz) {
     return (
@@ -77,46 +109,7 @@ function QuizRunner() {
     setSaving(true);
     const timeTaken = Math.round((performance.now() - startRef.current) / 1000);
     const graded = gradeQuiz(quiz, responses, timeTaken);
-    // Persist permanently
-    if (user) {
-      const passed = graded.percentage >= PASS_PERCENT;
-      const certId = passed ? certificateId(user.id, graded.resource_name) : null;
-      const { data, error } = await quizAttempts.insert({
-        user_id: user.id,
-        resource_name: graded.resource_name,
-        score: graded.score,
-        max_score: graded.max_score,
-        percentage: graded.percentage,
-        correct_count: graded.correct_count,
-        wrong_count: graded.wrong_count,
-        time_taken_s: graded.time_taken_s,
-        status: 'completed',
-        answers: graded.answers,
-        // Single course certificates are auto-issued on pass (no admin approval).
-        // In Supabase mode a DB trigger also enforces this; here we set it so the
-        // localStorage mock behaves identically.
-        cert_status: passed ? 'approved' : 'none',
-        cert_id: certId,
-      });
-      if (error) {
-        alert('Failed to save quiz attempt: ' + (error.message || JSON.stringify(error)));
-      }
-      if (data) {
-        graded.id = data.id;
-        graded.user_id = user.id;
-        graded.cert_id = data.cert_id || certId;
-        graded.cert_status = data.cert_status || (passed ? 'approved' : 'none');
-      }
-      await history.log(user.id, 'quiz', `Completed quiz: ${resourceName}`, { percentage: graded.percentage });
-
-      // Auto-email the certificate PDF. Best-effort — never block the results
-      // screen (offline/mock mode or a missing endpoint simply skips the email;
-      // the certificate is already downloadable in-app).
-      if (passed && data) {
-        issueCertificate({ id: data.id, user_id: user.id, resource_name: graded.resource_name, cert_id: graded.cert_id })
-          .catch(() => {});
-      }
-    }
+    await submitQuizAttempt(user, graded);
     setSaving(false);
     setResult(graded);
   };
