@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Award, Check, X, Eye, Download, ShieldCheck, Clock, Mail, Sparkles } from 'lucide-react';
 import { quizAttempts, profiles } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, downloadModuleCertificatePDF, certificateId } from '../../../lib/certificates';
-import { approveCertificate } from '../../../lib/certificateApi';
+import { approveCertificate, issueCertificate } from '../../../lib/certificateApi';
 import { isModuleCertResource, moduleCertSlug, moduleCertMeta, moduleLabel } from '../../../lib/workshops';
 
 function AdminLeaderboard() {
@@ -59,60 +59,26 @@ function AdminLeaderboard() {
     return Object.values(best).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [attempts]);
 
-  const handleApprove = async (a) => {
-    setBusy(a.id);
-    try {
-      const studentName = userMap[a.user_id]?.full_name || userMap[a.user_id]?.email || 'the student';
-      const result = await approveCertificate(a);
-      if (result.emailed) {
-        window.alert(`Certificate approved. A download link was emailed to ${result.to || studentName}. It expires in 24 hours.`);
-      } else if (result.link) {
-        const note = result.mock
-          ? 'Certificate approved. Email is disabled in offline/demo mode — share this 24-hour download link:'
-          : `Certificate approved, but the email could not be sent${result.emailError ? ` (${result.emailError})` : ''}. Share this 24-hour download link:`;
-        window.prompt(note, result.link);
-      } else {
-        window.alert('Certificate approved.');
-      }
-    } catch (e) {
-      window.alert(`Approval failed: ${e.message}`);
-    } finally {
-      await load();
-      setBusy(null);
-    }
-  };
-
-  // Re-issue the download link for an already-approved certificate. Reuses the
-  // approve flow, which mints a fresh 24h token and re-emails it to the student.
+  // Re-send the certificate PDF to the student (single course certs are already
+  // auto-issued; this just re-emails a fresh copy + a fresh 24h link).
   const handleResend = async (a) => {
     setBusy('rs-' + a.id);
     try {
-      const studentName = userMap[a.user_id]?.full_name || userMap[a.user_id]?.email || 'the student';
-      const result = await approveCertificate(a);
+      const u = userMap[a.user_id];
+      const studentName = u?.full_name || u?.email || 'the student';
+      const result = await issueCertificate(a);
       if (result.emailed) {
-        window.alert(`A new 24-hour download link was emailed to ${result.to || studentName}.`);
+        window.alert(`Certificate emailed to ${result.to || studentName}.`);
       } else if (result.link) {
-        const note = result.mock
-          ? 'Email is disabled in offline/demo mode — share this 24-hour download link:'
-          : `The link could not be emailed${result.emailError ? ` (${result.emailError})` : ''}. Copy this 24-hour download link and send it to the student:`;
-        window.prompt(note, result.link);
+        window.prompt('Email unavailable — share this 24-hour download link:', result.link);
       } else {
-        window.alert(`Could not send the download link${result.emailError ? `:\n\n${result.emailError}` : '.'}`);
+        window.alert(`Could not email the certificate${result.error ? `: ${result.error}` : '.'}`);
       }
     } catch (e) {
-      window.alert(`Could not resend link: ${e.message}`);
+      window.alert(`Could not email the certificate: ${e.message}`);
     } finally {
-      await load();
       setBusy(null);
     }
-  };
-
-  const handleReject = async (a) => {
-    if (!window.confirm("Are you sure you want to reject this certificate request?")) return;
-    setBusy(a.id);
-    await quizAttempts.update(a.id, { cert_status: 'rejected' });
-    await load();
-    setBusy(null);
   };
 
   // --- Module certificate approvals ----------------------------------------
@@ -132,9 +98,24 @@ function AdminLeaderboard() {
   const setModuleStatus = async (a, cert_status) => {
     setBusy(`ws-${a.id}`);
     try {
-      // Module certificates are delivered in-app (no emailed token link), so
-      // approval is a direct status update rather than the /api approve flow.
-      await quizAttempts.update(a.id, { cert_status });
+      if (cert_status === 'approved') {
+        // Approving a module (consolidated) certificate now emails the student
+        // the PDF via the serverless approve flow. Falls back to a local status
+        // update in offline/mock mode.
+        const slug = moduleCertSlug(a.resource_name);
+        const label = slug ? moduleLabel(slug) : undefined;
+        const result = await approveCertificate(a, { moduleLabel: label });
+        if (result.emailed) {
+          const u = userMap[a.user_id];
+          window.alert(`Module certificate approved and emailed to ${result.to || u?.email || 'the student'}.`);
+        } else if (result.link) {
+          window.prompt('Approved. Email is unavailable — share this 24-hour download link:', result.link);
+        }
+      } else {
+        await quizAttempts.update(a.id, { cert_status });
+      }
+    } catch (e) {
+      window.alert(`Could not update the module certificate: ${e.message}`);
     } finally {
       await load();
       setBusy(null);
@@ -312,25 +293,17 @@ function AdminLeaderboard() {
                       {status === 'none' && <span className="dash-muted">No Request</span>}
                     </td>
                     <td>
-                      {status === 'pending' && (
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button className="btn btn-primary btn-sm" disabled={busy === a.id} onClick={() => handleApprove(a)}>Approve</button>
-                          <button className="btn btn-outline btn-sm" disabled={busy === a.id} onClick={() => handleReject(a)}>Reject</button>
-                        </div>
-                      )}
-                      {status === 'approved' && (
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button className="btn btn-primary btn-sm" onClick={() => navigate(`/admin/certificate/${a.user_id}/${encodeURIComponent(a.resource_name)}`)}>
-                            <Eye size={14} /> View
-                          </button>
-                          <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
-                            <Download size={14} /> DL
-                          </button>
-                          <button className="btn btn-outline btn-sm" disabled={busy === 'rs-' + a.id} onClick={() => handleResend(a)} title="Email a fresh 24-hour download link to the student">
-                            <Mail size={14} /> {busy === 'rs-' + a.id ? 'Sending…' : 'Resend link'}
-                          </button>
-                        </div>
-                      )}
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => navigate(`/admin/certificate/${a.user_id}/${encodeURIComponent(a.resource_name)}`)}>
+                          <Eye size={14} /> View
+                        </button>
+                        <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
+                          <Download size={14} /> DL
+                        </button>
+                        <button className="btn btn-outline btn-sm" disabled={busy === 'rs-' + a.id} onClick={() => handleResend(a)} title="Email the certificate PDF to the student">
+                          <Mail size={14} /> {busy === 'rs-' + a.id ? 'Sending…' : 'Email cert'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
