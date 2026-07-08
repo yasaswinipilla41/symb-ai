@@ -4,7 +4,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, Sun, Moon, LogOut, Menu, X, Compass, User, ChevronDown, ArrowLeft, Settings, KeyRound } from 'lucide-react';
+import { Sparkles, Sun, Moon, LogOut, Menu, X, User, ChevronDown, ArrowLeft, Settings, KeyRound } from 'lucide-react';
 import { getIcon } from '../../lib/icons';
 import { useTheme } from '../../lib/ThemeContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -79,7 +79,6 @@ function DashboardShell({ title, nav, children }) {
         </nav>
 
         <div className="dash-sidebar-foot">
-          <Link to="/explore" className="dash-nav-link"><Compass size={17} /> <span>{t('Explore Resources')}</span></Link>
           <button className="dash-nav-link as-btn" onClick={onSignOut}><LogOut size={17} /> <span>{t('Sign out')}</span></button>
         </div>
       </aside>

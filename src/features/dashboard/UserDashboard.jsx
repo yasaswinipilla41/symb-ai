@@ -26,7 +26,9 @@ const NAV = [
   },
   {
     label: 'Learning',
+    
     items: [
+      { to: '/explore', label: 'Explore Resources', icon: 'Compass' },
       { to: '/dashboard/materials', label: 'Learning Materials', icon: 'GraduationCap' },
       { to: '/dashboard/quizzes', label: 'Quizzes', icon: 'Trophy' },
       { to: '/dashboard/results', label: 'My Results', icon: 'Award' },

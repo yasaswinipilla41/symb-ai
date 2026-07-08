@@ -30,6 +30,7 @@ const NAV = [
       { to: '/admin/users', label: 'Students', icon: 'Users' },
       { to: '/admin/leaderboard', label: 'Leaderboard & Approvals', icon: 'Trophy' },
       { to: '/admin/quiz-review', label: 'Quiz Review', icon: 'Award' },
+      { to: '/explore', label: 'Explore Resources', icon: 'Compass' },
       { to: '/admin/materials', label: 'Learning Materials', icon: 'GraduationCap' },
       { to: '/admin/notifications', label: 'Notifications', icon: 'Bell' },
     ],
