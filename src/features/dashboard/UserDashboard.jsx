@@ -1,10 +1,9 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import Overview from './pages/Overview';
 import BookmarksPage from './pages/BookmarksPage';
 import HistoryPage from './pages/HistoryPage';
-import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import FeedbackPage from './pages/FeedbackPage';
 import QuizzesPage from './pages/QuizzesPage';
@@ -19,7 +18,7 @@ import ComingSoon from './pages/ComingSoon';
 
 const NAV = [
   {
-    label: 'Overview',
+    // label: 'Overview',
     items: [
       { to: '/dashboard', end: true, label: 'Dashboard', icon: 'LayoutDashboard' },
     ],
@@ -41,7 +40,6 @@ const NAV = [
   {
     label: 'Account',
     items: [
-      { to: '/dashboard/profile', label: 'Profile', icon: 'User' },
       { to: '/dashboard/settings', label: 'Settings', icon: 'Settings' },
       { to: '/dashboard/feedback', label: 'Feedback', icon: 'MessageSquare' },
     ],
@@ -64,7 +62,7 @@ function UserDashboard() {
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="bookmarks" element={<BookmarksPage />} />
         <Route path="history" element={<HistoryPage />} />
-        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile" element={<Navigate to="/dashboard/settings" replace />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
       </Routes>

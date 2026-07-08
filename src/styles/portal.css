@@ -1178,6 +1178,7 @@ textarea:focus {
   gap: 1.2rem;
   overflow-y: auto;
   flex: 1;
+  padding-right: 15px;
 }
 
 .dash-nav-group {
@@ -1228,8 +1229,8 @@ textarea:focus {
 
 .dash-sidebar-foot {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 0.8rem;
-  margin-top: 0.8rem;
+  /* padding-top: 0.8rem;
+  margin-top: 0.8rem; */
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -4094,5 +4095,35 @@ textarea:focus {
 }
 
 @keyframes cert-dl-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dash-nav {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: #6366f1 #0a0a0a;
+}
+
+/* Chrome, Edge, Safari */
+.dash-nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dash-nav::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.dash-nav::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 4px;
+}
+
+/* Remove up/down buttons */
+.dash-nav::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }

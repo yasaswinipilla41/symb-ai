@@ -30,8 +30,8 @@ function DashboardShell({ title, nav, children }) {
   const name = profile?.full_name || user?.email || 'Student';
   const email = profile?.email || user?.email || '';
   const initial = (name || '?').charAt(0).toUpperCase();
-  const profilePath = isAdmin ? '/admin/profile' : '/dashboard/profile';
-  const settingsPath = isAdmin ? '/admin/settings' : '/dashboard/settings';
+  const profilePath = isAdmin ? '/admin/profile' : '/dashboard/settings';
+  const settingsPath = isAdmin ? '/admin/settings' : '/dashboard/settings?tab=preferences';
 
   const onSignOut = async () => {
     await signOut();
