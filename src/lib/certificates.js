@@ -1,7 +1,7 @@
 // Certificate logic.
 //
 // A certificate is EARNED when a student's best attempt on a resource's quiz is
-// >= PASS_PERCENT (80%). Certificates are therefore derived from quiz_attempts —
+// >= PASS_PERCENT (70%). Certificates are therefore derived from quiz_attempts —
 // no extra table needed. The certificate ID is deterministic (stable) from the
 // student id + course name, so the same pass always yields the same ID.
 

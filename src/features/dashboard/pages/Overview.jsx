@@ -67,10 +67,9 @@ function Overview() {
         <div>
           <p className="welcome-eyebrow">Welcome back</p>
           <h2>Hi, {name} 👋</h2>
-          <p className="welcome-sub">Study a module, pass the quiz at 80%, and earn your certificate.</p>
+          <p className="welcome-sub">Study a module, pass the quiz at 70%, and earn your certificate.</p>
         </div>
         <div className="welcome-meta">
-          <div><span>Employee ID</span><strong>{profile?.employee_id || '—'}</strong></div>
           <div><span>Email</span><strong>{profile?.email || user?.email}</strong></div>
           <div><span>Role</span><strong className="cap">{roleLabel(profile?.role)}</strong></div>
         </div>
@@ -96,7 +95,7 @@ function Overview() {
             <ul className="mini-list">
               {recentQuizzes.map((a) => (
                 <li key={a.id}>
-                  <span className={`mini-dot ${a.percentage >= 80 ? 'green' : 'amber'}`} />
+                  <span className={`mini-dot ${a.percentage >= 70 ? 'green' : 'amber'}`} />
                   <span className="mini-title">{a.resource_name}</span>
                   <span className="mini-time">{Math.round(a.percentage)}%</span>
                 </li>

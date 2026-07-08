@@ -179,8 +179,19 @@ returns trigger
 language plpgsql
 as $$
 begin
-  if coalesce(new.percentage, 0) >= 80 and new.cert_id is null then
+  if coalesce(new.percentage, 0) >= 70 and new.cert_id is null then
     new.cert_id := public.certificate_id(new.user_id, new.resource_name);
+  end if;
+
+  -- Single course certificates no longer require admin approval: auto-approve
+  -- any passing NON-module attempt. Module (consolidated) certificates keep
+  -- their explicit status — they are sentinel rows whose resource_name is
+  -- 'module-cert:<slug>' (plus the legacy 'AI & Emerging Technologies Workshop').
+  if coalesce(new.percentage, 0) >= 70
+     and new.resource_name not like 'module-cert:%'
+     and new.resource_name <> 'AI & Emerging Technologies Workshop'
+     and coalesce(new.cert_status, 'none') in ('none', 'pending') then
+    new.cert_status := 'approved';
   end if;
 
   return new;
@@ -194,7 +205,15 @@ create trigger trg_quiz_attempt_cert_id
 
 update public.quiz_attempts
    set cert_id = public.certificate_id(user_id, resource_name)
- where cert_id is null and percentage >= 80;
+ where cert_id is null and percentage >= 70;
+
+-- Auto-approve historical passing single-course certificates.
+update public.quiz_attempts
+   set cert_status = 'approved'
+ where percentage >= 70
+   and resource_name not like 'module-cert:%'
+   and resource_name <> 'AI & Emerging Technologies Workshop'
+   and coalesce(cert_status, 'none') in ('none', 'pending');
 
 -- ---------------------------------------------------------------------------
 -- BOOKMARKS
@@ -454,7 +473,7 @@ begin
   ) into result
   from public.quiz_attempts q
   join public.profiles p on p.user_id = q.user_id
-  where q.percentage >= 80
+  where q.percentage >= 70
     and (
       q.cert_id = p_cert_id
       or public.certificate_id(q.user_id, q.resource_name) = p_cert_id

@@ -5,7 +5,7 @@ import { profiles } from '../../../lib/backend';
 
 function ProfilePage() {
   const { user, profile, refreshProfile, updatePassword } = useAuth();
-  const [form, setForm] = useState({ full_name: '', employee_id: '', department: '', avatar_url: '' });
+  const [form, setForm] = useState({ full_name: '', department: '', avatar_url: '' });
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -16,7 +16,6 @@ function ProfilePage() {
     if (profile) {
       setForm({
         full_name: profile.full_name || '',
-        employee_id: profile.employee_id || '',
         department: profile.department || '',
         avatar_url: profile.avatar_url || '',
       });
@@ -89,16 +88,10 @@ function ProfilePage() {
             <div className="input-wrap"><input value={form.full_name} onChange={set('full_name')} /></div>
           </label>
 
-          <div className="field-row">
-            <label className="field">
-              <span>Employee ID</span>
-              <div className="input-wrap"><input value={form.employee_id} onChange={set('employee_id')} /></div>
-            </label>
-            <label className="field">
-              <span>Department</span>
-              <div className="input-wrap"><input value={form.department} onChange={set('department')} placeholder="Optional" /></div>
-            </label>
-          </div>
+          <label className="field">
+            <span>Department</span>
+            <div className="input-wrap"><input value={form.department} onChange={set('department')} placeholder="Optional" /></div>
+          </label>
 
           <label className="field">
             <span>Email</span>

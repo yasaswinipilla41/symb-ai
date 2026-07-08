@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { User, Award, Clock, FileText, ArrowLeft, ShieldCheck, Download, KeyRound, CheckCircle2, ShieldOff, Ban } from 'lucide-react';
 import { profiles, quizAttempts, history, activityLogs } from '../../../lib/backend';
 import { PASS_PERCENT, downloadCertificatePDF, certificateId } from '../../../lib/certificates';
-import { approveCertificate } from '../../../lib/certificateApi';
 import { isModuleCertResource } from '../../../lib/workshops';
 import { roleLabel } from '../../../lib/roles';
 
@@ -88,29 +87,6 @@ function AdminStudentProfile() {
     setBusy(null);
   };
 
-  const handleApprove = async (a) => {
-    setBusy(a.id);
-    try {
-      const result = await approveCertificate(a);
-      if (result.emailed) {
-        window.alert(`Certificate approved. A download link was emailed to ${result.to || studentName}. It expires in 24 hours.`);
-      } else if (result.link) {
-        // Email not configured / failed / mock mode — hand the admin the link to share.
-        const note = result.mock
-          ? 'Certificate approved. Email is disabled in offline/demo mode — share this 24-hour download link:'
-          : `Certificate approved, but the email could not be sent${result.emailError ? ` (${result.emailError})` : ''}. Share this 24-hour download link:`;
-        window.prompt(note, result.link);
-      } else {
-        window.alert('Certificate approved.');
-      }
-    } catch (e) {
-      window.alert(`Approval failed: ${e.message}`);
-    } finally {
-      await load();
-      setBusy(null);
-    }
-  };
-
   if (loading) return <div className="dash-page"><p className="empty-hint">Loading profile...</p></div>;
   if (!profile) return <div className="dash-page"><p className="empty-hint">User not found.</p></div>;
 
@@ -140,7 +116,6 @@ function AdminStudentProfile() {
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>{studentName}</h3>
           <p style={{ margin: '0 0 1rem 0', color: 'var(--color-slate-500)' }}>{profile.email}</p>
           <div className="detail-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <div><dt>Employee ID</dt><dd>{profile.employee_id || '—'}</dd></div>
             <div><dt>Department</dt><dd>{profile.department || '—'}</dd></div>
             <div><dt>Registered</dt><dd>{new Date(profile.created_at).toLocaleDateString()}</dd></div>
             <div><dt>Role</dt><dd className="cap">{roleLabel(profile.role)}</dd></div>
@@ -160,28 +135,17 @@ function AdminStudentProfile() {
                 <thead><tr><th>Course</th><th>Score</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                   {certHistory.map(a => {
-                    const status = a.cert_status || 'none';
                     return (
                       <tr key={a.id}>
                         <td>{a.resource_name}</td>
                         <td>{Math.round(a.percentage)}%</td>
                         <td>
-                          {status === 'approved' && <span className="badge-green">Approved</span>}
-                          {status === 'pending' && <span className="badge-amber">Pending</span>}
-                          {status === 'rejected' && <span className="badge-red">Rejected</span>}
-                          {status === 'none' && <span className="dash-muted">No Request</span>}
+                          <span className="badge-green">Issued</span>
                         </td>
                         <td>
-                          {status === 'approved' && (
-                            <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
-                              <Download size={14} /> DL
-                            </button>
-                          )}
-                          {status === 'pending' && (
-                            <button className="btn btn-primary btn-sm" disabled={busy === a.id} onClick={() => handleApprove(a)}>
-                              Approve
-                            </button>
-                          )}
+                          <button className="btn btn-outline btn-sm" disabled={busy === 'dl-' + a.id} onClick={() => handleDownload(a, studentName)}>
+                            <Download size={14} /> DL
+                          </button>
                         </td>
                       </tr>
                     );

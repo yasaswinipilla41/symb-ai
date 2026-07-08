@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Download, Printer, ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
+import { Download, Printer, ArrowLeft, Lock } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
 import { quizAttempts } from '../../../lib/backend';
 import { findResource, categoryMeta } from '../../../lib/catalog';
@@ -70,19 +70,6 @@ function CertificatePage() {
           <p>You haven't earned this certificate yet.</p>
           <p className="dash-muted">Score {PASS_PERCENT}% or higher on the {resourceName} quiz to unlock it.</p>
           <button className="btn btn-primary btn-sm" onClick={() => navigate(`/dashboard/quizzes/${encodeURIComponent(resourceName)}`)}>Take the quiz</button>
-        </div>
-      </div>
-    );
-  }
-
-  // New logic: Only display if approved
-  if (cert.cert_status !== 'approved' && profile?.role !== 'admin') {
-    return (
-      <div className="dash-page">
-        <div className="empty-state">
-          <ShieldCheck size={40} />
-          <p>Certificate is {cert.cert_status}.</p>
-          <p className="dash-muted">Your certificate is currently pending admin approval.</p>
         </div>
       </div>
     );

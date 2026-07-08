@@ -110,3 +110,74 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_public_certificate(text) TO anon, authenticated;
+
+-- ===========================================================================
+-- 2026-07-08: 70% pass mark + auto-issued single-course certificates
+-- ===========================================================================
+
+-- 1. Lower the cert-id threshold and auto-approve passing single certs.
+create or replace function public.set_quiz_attempt_cert_id()
+returns trigger
+language plpgsql
+as $$
+begin
+  if coalesce(new.percentage, 0) >= 70 and new.cert_id is null then
+    new.cert_id := public.certificate_id(new.user_id, new.resource_name);
+  end if;
+
+  if coalesce(new.percentage, 0) >= 70
+     and new.resource_name not like 'module-cert:%'
+     and new.resource_name <> 'AI & Emerging Technologies Workshop'
+     and coalesce(new.cert_status, 'none') in ('none', 'pending') then
+    new.cert_status := 'approved';
+  end if;
+
+  return new;
+end;
+$$;
+
+-- 2. Lower the public verification RPC threshold to 70%.
+create or replace function public.get_public_certificate(p_cert_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  result jsonb;
+begin
+  select jsonb_build_object(
+    'id', coalesce(q.cert_id, public.certificate_id(q.user_id, q.resource_name)),
+    'resource_name', q.resource_name,
+    'percentage', q.percentage,
+    'created_at', q.created_at,
+    'student_name', coalesce(p.full_name, p.email),
+    'cert_status', q.cert_status
+  ) into result
+  from public.quiz_attempts q
+  join public.profiles p on p.user_id = q.user_id
+  where q.percentage >= 70
+    and (
+      q.cert_id = p_cert_id
+      or public.certificate_id(q.user_id, q.resource_name) = p_cert_id
+    )
+  order by q.percentage desc, q.created_at asc
+  limit 1;
+
+  return result;
+end;
+$$;
+
+grant execute on function public.get_public_certificate(text) to anon, authenticated;
+
+-- 3. Backfill: cert ids for newly-passing rows + approve historical single certs.
+update public.quiz_attempts
+   set cert_id = public.certificate_id(user_id, resource_name)
+ where cert_id is null and percentage >= 70;
+
+update public.quiz_attempts
+   set cert_status = 'approved'
+ where percentage >= 70
+   and resource_name not like 'module-cert:%'
+   and resource_name <> 'AI & Emerging Technologies Workshop'
+   and coalesce(cert_status, 'none') in ('none', 'pending');

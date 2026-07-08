@@ -17,9 +17,11 @@
 
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { buildModuleCertificatePdfBuffer, buildCertificatePdfBuffer } from './_certificate-pdf.js';
+import { moduleMetaFor, moduleSlugFromName, isModuleResourceName } from './_module-meta.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const PASS_PERCENT = 80;
+const PASS_PERCENT = 70;
 
 function adminClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -80,7 +82,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { attemptId } = await readJson(req);
+    const { attemptId, moduleLabel } = await readJson(req);
     if (!attemptId) return res.status(400).json({ error: 'attemptId is required' });
 
     // --- Authenticate the caller ------------------------------------------
@@ -148,6 +150,36 @@ export default async function handler(req, res) {
     let emailError = null;
     const resendKey = process.env.RESEND_API_KEY;
     const from = process.env.EMAIL_FROM;
+    // Build the certificate PDF for the email attachment. Module (consolidated)
+    // certs use the module template; anything else uses the course template.
+    let pdf = null;
+    try {
+      const base = baseUrl(req);
+      const verifyUrl = `${base}/verify/${certId || attempt.cert_id || ''}`;
+      const certForPdf = {
+        id: certId || attempt.cert_id || '',
+        resourceName: attempt.resource_name,
+        categoryLabel: 'General',
+        percentage: Math.round(Number(attempt.percentage)),
+        date: attempt.created_at,
+      };
+      if (isModuleResourceName(attempt.resource_name)) {
+        const slug = moduleSlugFromName(attempt.resource_name);
+        pdf = await buildModuleCertificatePdfBuffer(moduleMetaFor(slug, moduleLabel), certForPdf, studentName, verifyUrl);
+      } else {
+        pdf = await buildCertificatePdfBuffer(certForPdf, studentName, verifyUrl);
+      }
+    } catch (e) {
+      // A PDF failure must not block approval; email falls back to link-only.
+      pdf = null;
+    }
+
+    // Module rows store a sentinel resource_name (module-cert:<slug>); use the
+    // human module title in the email copy instead of the raw sentinel string.
+    const displayName = isModuleResourceName(attempt.resource_name)
+      ? moduleMetaFor(moduleSlugFromName(attempt.resource_name), moduleLabel).title
+      : attempt.resource_name;
+
     if (resendKey && from && to) {
       try {
         const { Resend } = await import('resend');
@@ -155,13 +187,14 @@ export default async function handler(req, res) {
         const { error } = await resend.emails.send({
           from,
           to,
-          subject: `Your ${attempt.resource_name} certificate is approved`,
+          subject: `Your ${displayName} certificate is approved`,
           html: emailHtml({
             studentName,
-            resourceName: attempt.resource_name,
+            resourceName: displayName,
             link,
             expiresAtLabel: expiresAt.toUTCString(),
           }),
+          ...(pdf ? { attachments: [{ filename: `${certId || 'certificate'}.pdf`, content: pdf.toString('base64') }] } : {}),
         });
         if (error) emailError = error.message || String(error);
         else emailed = true;
