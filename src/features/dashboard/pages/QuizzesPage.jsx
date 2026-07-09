@@ -82,7 +82,7 @@ function QuizzesPage() {
       <div className="page-toolbar">
         <div>
           <h2 className="dash-h2">Quizzes</h2>
-          <p className="dash-muted">Each quiz has 20 questions drawn from the learning material. Score {PASS_PERCENT}% to pass and earn a certificate.</p>
+          <p className="dash-muted">Each quiz has 10 questions drawn from the learning material. Score {PASS_PERCENT}% to pass and earn a certificate.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
           <div className="input-wrap search-inline" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

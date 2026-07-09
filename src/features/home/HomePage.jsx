@@ -133,7 +133,7 @@ function HomePage() {
           <div className="doc-card"><BookOpen size={22} /><h4>Guided Docs</h4><p>Best-practice guides &amp; model tips inside each resource.</p><button className="btn btn-ghost btn-sm" onClick={() => navigate('/explore')}>Open</button></div>
           <div className="doc-card"><Presentation size={22} /><h4>Editable PPTs</h4><p>Open, edit and download slide decks in-portal.</p><span className="soon">Coming in your dashboard</span></div>
           <div className="doc-card"><FileText size={22} /><h4>Editable PDFs</h4><p>Annotate and save PDFs without external tools.</p><span className="soon">Coming in your dashboard</span></div>
-          <div className="doc-card"><Trophy size={22} /><h4>Quizzes</h4><p>20 questions per tool with instant scoring.</p><span className="soon">Coming in your dashboard</span></div>
+          <div className="doc-card"><Trophy size={22} /><h4>Quizzes</h4><p>10 questions per tool with instant scoring.</p><span className="soon">Coming in your dashboard</span></div>
         </div>
       </section>
 
