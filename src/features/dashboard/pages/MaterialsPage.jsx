@@ -27,7 +27,7 @@ function MaterialsPage() {
       <div className="page-toolbar">
         <div>
           <h2 className="dash-h2"><GraduationCap size={22} style={{ verticalAlign: '-4px' }} /> Learning Materials</h2>
-          <p className="dash-muted">Every resource has an intermediate PDF &amp; PPT module. Study, then pass the quiz (80%) to earn a certificate.</p>
+          <p className="dash-muted">Every resource has an intermediate PDF &amp; PPT module. Study, then pass the quiz (70%) to earn a certificate.</p>
         </div>
         <div className="toolbar-controls">
           <div className="input-wrap cat-select">

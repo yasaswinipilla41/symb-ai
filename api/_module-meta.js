@@ -11,6 +11,12 @@ const MODULE_META = {
     dedication: 'Dedicated to Continuous learning and innovation',
     tagline: 'Learning Today, Innovating Tomorrow',
   },
+  'sec-ai-automation': {
+    title: 'Artificial Intelligence and Emerging Technologies',
+    heading: 'has successfully completed the Workshop on',
+    dedication: 'Dedicated to Continuous learning and innovation',
+    tagline: 'Learning Today, Innovating Tomorrow',
+  },
 };
 
 export function isModuleResourceName(name) {

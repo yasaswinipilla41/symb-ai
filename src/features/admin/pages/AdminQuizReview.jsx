@@ -66,7 +66,7 @@ function AdminQuizReview() {
       <div className="page-toolbar">
         <div>
           <h2 className="dash-h2">Quiz Review</h2>
-          <p className="dash-muted">Grade open-ended answers (2 marks each).</p>
+          <p className="dash-muted"></p>
         </div>
         <div className="filter-chips">
           <Filter size={15} />

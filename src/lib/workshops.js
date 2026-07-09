@@ -15,6 +15,11 @@
 // isModuleCertResource().
 
 import { allResources, categoryMeta } from './catalog';
+import { sectionSlug, isSectionSlug, sectionTitleFromSlug } from './sections';
+
+// Section helpers are re-exported so callers can import all certificate-award
+// concerns from this one module.
+export { sectionSlug, isSectionSlug, sectionTitleFromSlug };
 
 export const MODULE_PASS_PERCENT = 70;
 
@@ -23,10 +28,20 @@ const MODULE_CERT_PREFIX = 'module-cert:';
 // treated as module-cert rows so they never leak into quiz results.
 const LEGACY_SENTINELS = new Set(['AI & Emerging Technologies Workshop']);
 
-// Per-module certificate copy. Modules not listed here fall back to generic
-// wording derived from the module's title.
+// Per-award certificate copy, keyed by slug. Awards are now earned per
+// nav-section (slug `sec-…`); anything not listed here falls back to generic
+// wording derived from the section/module title. The legacy `ai-tools` entry is
+// kept so any pre-existing per-module award rows still render their original
+// wording, and the `sec-ai-automation` entry preserves that flagship workshop
+// copy for the "AI & AUTOMATION" section it now belongs to.
 const MODULE_META = {
   'ai-tools': {
+    title: 'Artificial Intelligence and Emerging Technologies',
+    heading: 'has successfully completed the Workshop on',
+    dedication: 'Dedicated to Continuous learning and innovation',
+    tagline: 'Learning Today, Innovating Tomorrow',
+  },
+  'sec-ai-automation': {
     title: 'Artificial Intelligence and Emerging Technologies',
     heading: 'has successfully completed the Workshop on',
     dedication: 'Dedicated to Continuous learning and innovation',
@@ -52,6 +67,7 @@ export function moduleCertSlug(name) {
 // pass its title; this static fallback covers built-in categories and
 // title-cases unknown (admin-created) slugs.
 export function moduleLabel(slug) {
+  if (isSectionSlug(slug)) return sectionTitleFromSlug(slug);
   if (categoryMeta[slug]?.label) return categoryMeta[slug].label;
   return String(slug || '')
     .split('-')
@@ -113,4 +129,15 @@ export function moduleProgress(slug, attempts, requiredNames) {
 export function moduleCertAttempt(slug, attempts) {
   const rn = moduleCertResourceName(slug);
   return (attempts || []).find((a) => a.resource_name === rn) || null;
+}
+
+// A user's progress toward a SECTION certificate — the higher-order award that
+// unlocks only once EVERY module inside a nav-section is completed. It is just
+// module progress evaluated against the union of every resource across all of
+// the section's modules, so `completed` is true only when all of them are
+// passed at MODULE_PASS_PERCENT. `requiredNames` is that combined resource list
+// (built from the live catalog by the caller), which keeps this automatically
+// correct as modules/resources are added to a section.
+export function sectionProgress(requiredNames, attempts) {
+  return moduleProgress(null, attempts, requiredNames || []);
 }

@@ -135,7 +135,7 @@ to:
 export const PASS_PERCENT = 70;
 ```
 
-Also update the comment on line 10 from `// Passing score is 80% (see PASS_PERCENT).` to `// Passing score is 70% (see PASS_PERCENT).`
+Also update the comment on line 10 from `// Passing score is 70% (see PASS_PERCENT).` to `// Passing score is 60% (see PASS_PERCENT).`
 
 - [ ] **Step 2: Change the serverless constant**
 

@@ -110,7 +110,7 @@ function Overview() {
             <Link to="/dashboard/certificates" className="section-link">All <ArrowRight size={15} /></Link>
           </div>
           {certs.length === 0 ? (
-            <p className="empty-hint">No certificates yet. Pass a quiz at 80% to earn one.</p>
+            <p className="empty-hint">No certificates yet. Pass a quiz at 70% to earn one.</p>
           ) : (
             <ul className="mini-list">
               {certs.slice(0, 4).map((c) => (

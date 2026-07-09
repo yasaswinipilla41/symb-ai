@@ -19,21 +19,11 @@ import { database } from '../data/database';
 import { resourcesApi, categoriesApi } from './backend';
 import { setCatalogOverlay } from './catalog';
 import { clearMaterialCache } from './materials';
+import { BASE_SECTIONS, slugify } from './sections';
 
-// Static sidebar grouping — the visual sections and which category slugs sit in
-// each. (Moved here from Sidebar so the store owns the whole nav model.)
-export const BASE_SECTIONS = [
-  { title: 'AI & AUTOMATION', links: ['ai-tools', 'frameworks-agents', 'mcp-tools'] },
-  { title: 'DATA & ANALYTICS', links: ['data-analytics', 'web-analytics'] },
-  { title: 'BACKEND & INFRA', links: ['backend-infra', 'hosting-domains', 'web-scraping', 'erp-business', 'payments'] },
-  { title: 'CLOUD PLATFORMS', links: ['azure', 'aws'] },
-  { title: 'FRONTEND & FRAMEWORKS', links: ['web-frameworks'] },
-  { title: 'MOBILE', links: ['mobile-frameworks', 'cicd-distribution'] },
-  { title: 'DEV TOOLS', links: ['source-control', 'iac'] },
-  { title: 'TESTING', links: ['testing'] },
-  { title: 'DESIGN & ANIMATION', links: ['design-tools', 'animation', 'colors', 'icons'] },
-  { title: 'PRODUCTIVITY', links: ['note-taking', 'task-management'] },
-];
+// Re-exported for backward compatibility — the nav-section model now lives in
+// ./sections so the certificate logic can read it without pulling in React.
+export { BASE_SECTIONS };
 
 const STATIC_LABELS = {
   'ai-tools': 'AI Tools',
@@ -78,14 +68,6 @@ function saveSectionMap(map) {
   } catch {
     /* ignore quota / private-mode errors */
   }
-}
-
-function slugify(text) {
-  return String(text || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 // Turn a DB resources row into the item shape the UI already understands.

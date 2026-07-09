@@ -9,8 +9,9 @@ import {
   PASS_PERCENT, certificateId,
 } from '../../../lib/certificates';
 import {
-  MODULE_PASS_PERCENT, moduleProgress, moduleCertAttempt, moduleCertMeta,
-  moduleCertResourceName, moduleCertSlug, moduleLabel, isModuleCertResource,
+  MODULE_PASS_PERCENT, sectionProgress, moduleCertAttempt, moduleCertMeta,
+  moduleCertResourceName, moduleCertSlug, isModuleCertResource,
+  sectionSlug, isSectionSlug,
 } from '../../../lib/workshops';
 
 function CertificatesPage() {
@@ -22,7 +23,7 @@ function CertificatesPage() {
 
   // Live merged catalog — used to know the CURRENT set of tools in each module
   // (so admin-added tools count and module totals stay accurate).
-  const { catalog: liveCatalog, loading: catalogLoading } = useResourcesStore();
+  const { catalog: liveCatalog, sections, loading: catalogLoading } = useResourcesStore();
   const liveResources = useMemo(() => {
     const out = [];
     for (const slug of Object.keys(liveCatalog)) {
@@ -61,39 +62,50 @@ function CertificatesPage() {
     finally { setBusy(''); }
   };
 
-  // ---- Module certificates --------------------------------------------------
-  // One card per module the student is engaged with (has at least one quiz
-  // attempt in, or has already requested). Each shows progress toward the
-  // module certificate, earned by passing every tool at MODULE_PASS_PERCENT.
+  // ---- Section certificates -------------------------------------------------
+  // One card per nav-section the student is engaged with. A section groups
+  // several modules (e.g. "AI & AUTOMATION" = AI Tools + Frameworks & Agents +
+  // MCP Tools). The certificate for a section unlocks only once EVERY module in
+  // it is completed — i.e. every resource across all of the section's modules is
+  // passed at MODULE_PASS_PERCENT. The set of modules/resources comes from the
+  // live nav model + catalog, so new sections or modules follow this rule
+  // automatically with no code change.
   const moduleCards = useMemo(() => {
-    const byCat = {};
-    for (const r of liveResources) (byCat[r.category] = byCat[r.category] || []).push(r.name);
+    // category slug -> section title, and section slug -> combined resource list.
+    const catToSection = {};
+    for (const sec of sections) {
+      for (const link of sec.links) catToSection[link.slug] = sec.title;
+    }
 
+    // Which sections is the student engaged with (any attempt in one of the
+    // section's modules, or an existing section-cert request)?
     const engaged = new Set();
     for (const a of attempts) {
       if (isModuleCertResource(a.resource_name)) {
         const s = moduleCertSlug(a.resource_name);
-        if (s) engaged.add(s);
+        if (s && isSectionSlug(s)) engaged.add(s);
         continue;
       }
       const res = liveResources.find((r) => r.name === a.resource_name);
-      if (res) engaged.add(res.category);
+      const secTitle = res && catToSection[res.category];
+      if (secTitle) engaged.add(sectionSlug(secTitle));
     }
 
-    return [...engaged]
-      .filter((slug) => (byCat[slug]?.length || 0) > 0)
-      .map((slug) => {
-        const required = byCat[slug];
-        const label = liveCatalog[slug]?.title || moduleLabel(slug);
-        return {
-          slug,
-          meta: moduleCertMeta(slug, label),
-          progress: moduleProgress(slug, attempts, required),
-          attempt: moduleCertAttempt(slug, attempts),
-        };
+    return sections
+      .map((sec) => {
+        const catSlugs = sec.links.map((l) => l.slug);
+        const required = liveResources.filter((r) => catSlugs.includes(r.category)).map((r) => r.name);
+        return { slug: sectionSlug(sec.title), title: sec.title, required };
       })
+      .filter((s) => s.required.length > 0 && engaged.has(s.slug))
+      .map(({ slug, title, required }) => ({
+        slug,
+        meta: moduleCertMeta(slug, title),
+        progress: sectionProgress(required, attempts),
+        attempt: moduleCertAttempt(slug, attempts),
+      }))
       .sort((a, b) => (b.progress.passedCount / b.progress.total) - (a.progress.passedCount / a.progress.total));
-  }, [liveResources, liveCatalog, attempts]);
+  }, [sections, liveResources, attempts]);
 
   const requestModule = async (card) => {
     setBusy(`ws-${card.slug}`);

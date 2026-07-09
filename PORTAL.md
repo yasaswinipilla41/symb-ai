@@ -85,7 +85,7 @@ Route guards live in `src/routes/ProtectedRoute.jsx`.
 
 ## Certificates — approval + emailed 24h download link
 
-- ✅ Passing a quiz (≥ `PASS_PERCENT`, 80%) earns a certificate; the user
+- ✅ Passing a quiz (≥ `PASS_PERCENT`, 70%) earns a certificate; the user
   **requests** it (`cert_status: 'pending'`).
 - ✅ An admin **approves** it from the Leaderboard or a Student Profile. Approval
   goes through the serverless function [`api/approve-certificate.js`](api/approve-certificate.js),
