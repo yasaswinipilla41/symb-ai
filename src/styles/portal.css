@@ -3323,8 +3323,9 @@ textarea:focus {
 
 /* Dashboard stat sub-labels + quick links + achievements */
 .stat-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+    margin-left: 5px;
+    font-size: .72rem;
+    color: var(--text-muted);
 }
 
 .quick-links {
