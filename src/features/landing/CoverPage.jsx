@@ -58,7 +58,7 @@ function CoverPage() {
           <div className="hero-stats">
             <div><strong>{total}+</strong><span>Resources</span></div>
             <div><strong>{categoryList().length}</strong><span>Categories</span></div>
-            <div><strong>20</strong><span>Quiz Qs / tool</span></div>
+            <div><strong>10</strong><span>Quiz Qs / tool</span></div>
           </div>
         </div>
       </section>
